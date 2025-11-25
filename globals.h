@@ -31,7 +31,14 @@ public:
 class Bullet {
 public:
     float x, y, vx, vy;
-    float life_timer = 1000.0f; // 10 seconds
+    float life_timer = 10000.0f; // 10 seconds
+};
+
+class Rocket {
+    public:
+        float x, y, vx, vy, scale, rotation;
+        float life_timer = 10000.0f; // 10 seconds
+        SDL_FRect rect;
 };
     
 //Dropped item
@@ -43,11 +50,13 @@ public:
     float x, y, vx, vy, scale;
 };
 
+
 class World_C {
     public:
         std::vector<Enemy> enemies;
         std::vector<Bullet> bullets;
         std::vector<Item> dropped_items;
+        std::vector<Rocket> rockets;
 };
 
 

@@ -424,6 +424,18 @@ int main() {
                 world.dropped_items.push_back(lilitem);
             }
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_G) { teto.holding_weapon = !teto.holding_weapon; }
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_F) { 
+                Rocket newrocket; newrocket.x = teto.x; newrocket.y = teto.y + 80;
+                newrocket.scale = 1; newrocket.vy -= 3.0f;
+                float dx = mx - (WINDOW_WIDTH/2);
+                float dy = my - (WINDOW_HEIGHT/2);
+                float nx = dx / WINDOW_WIDTH * 2.25f;
+                newrocket.vy += (dy / WINDOW_HEIGHT) * 2;
+                newrocket.vx = nx * 1;
+
+                world.rockets.emplace_back(newrocket);
+            
+            }
 
 
         }
@@ -599,6 +611,62 @@ int main() {
             }
 
 
+        }
+
+        //Render rockets
+        //Render bullet & do hit physics
+        for (int i = 0; i < (int)world.rockets.size(); i++) {
+            Rocket* r = &world.rockets[i];
+            if (r == nullptr) { break;}
+            
+            r->rect.h = 100 * r->scale;
+            r->rect.w = 100 * r->scale;
+            //Gravity
+            r->vy += deltaTime * 0.01f;
+            //Velocity
+            r->x += r->vx * deltaTime;
+            r->y += r->vy * deltaTime;
+            r->life_timer -= deltaTime;
+            //Rotation
+            r->rotation = atan2(r->vy,r->vx) * 57.29f + 90.0f;
+
+
+            //Set to rect
+            r->rect.x = r->x - teto.x + WINDOW_WIDTH/2- 50;
+            r->rect.y = r->y - teto.y + WINDOW_HEIGHT/2 - 50;
+            //SDL_RenderTexture(sdl_renderer,textures->rocket,nullptr,&r->rect);
+
+            SDL_RenderTextureRotated(sdl_renderer,textures->rocket,nullptr,&r->rect,r->rotation,NULL,SDL_FLIP_NONE);
+            //Hit testing
+            Enemy* curr;
+            
+            //Loop thru each enemy
+            for (int plush = 0; plush < (int)world.enemies.size(); plush++) {
+                curr = &world.enemies[plush];
+                float dx = (r->x - curr->x);
+                float dy = (r->y - curr->y);
+
+                float distance = sqrtf(dx*dx+dy*dy);
+
+                if (distance < 0.0001f) continue;
+                //Only when going donw
+                if (distance < 30 && r->vy > 0) {
+
+                    //normalize...
+                    float nx = dx / distance;
+                    float ny = dy / distance;
+                    
+                    curr->xv -= nx * 3;
+                    curr->yv -= ny * 3;
+                    curr->damage_cooldown = 1000; //RESET COOLDOWN
+                    //erase kept segfaulting
+                    r->x = 999999;
+                } 
+            }
+            //Bullet life
+            if (r->life_timer <= 0) {
+                world.rockets.erase(world.rockets.begin() + i); i--;
+            }
         }
 
 

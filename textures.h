@@ -41,6 +41,7 @@ class Game_Textures {
         SDL_Texture* hitstand = nullptr;
         SDL_Texture* playbutton = nullptr;
         
+        SDL_Texture* rocket = nullptr;
     
         bool load(SDL_Renderer* renderer) {
             teto_texture_l = IMG_LoadTexture(renderer, "Assets/teto-left.png");
@@ -61,7 +62,9 @@ class Game_Textures {
             apple = IMG_LoadTexture(renderer, "Assets/apple.png");
             bricks = IMG_LoadTexture(renderer, "Assets/bricks.png");
             agent = IMG_LoadTexture(renderer, "Assets/agent.png");
+            rocket = IMG_LoadTexture(renderer, "Assets/rocket.png");
     
+
             capsule = IMG_LoadTexture(renderer, "Assets/capsule.png");
     
             phone = IMG_LoadTexture(renderer, "Assets/UI/android.png");
@@ -70,6 +73,7 @@ class Game_Textures {
             hitstand = IMG_LoadTexture(renderer, "Assets/UI/hitstand.png");
             playbutton = IMG_LoadTexture(renderer, "Assets/UI/playbutton.png");
     
+
             return true;
         }
     };
