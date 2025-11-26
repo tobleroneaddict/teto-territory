@@ -2,20 +2,20 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-//#include "include/PerlinNoise/PerlinNoise.hpp"
 #include "include/SDL_image.h"
 #include "vector"
 
 #include <SDL3/SDL_time.h>
 #include <sstream>
-
+#include <cstdint>
 //Game Mechanics
 #include "globals.h"
 #include "blackjack_engine.h"
 #include "phone.h"
 
 //World
-#include "include/TMXLoader/TMXLoader.h"
+#include "tmxparse.h"
+
 
 
 //World of all da stuff
@@ -80,7 +80,7 @@ public:
     bool drunk = false;
     float drunk_timer = 0;
     bool driving = false;
-    bool alt = false;
+    bool alt = true;
 
     bool teto_rendering = true;
     SDL_Texture* teto_textureL;
@@ -217,9 +217,12 @@ int main() {
     textures = new Game_Textures;
     
     //Load map
-    //TMXLoader *loader = new TMXLoader();
-    //loader->loadMap("map", "Tiled/map.tmx");
-    //loader->printMapData("map");
+    TMX tiles;
+    if (!tiles.load("Tiled/map.tmx")) return 1;
+
+    //ID is 48 ???
+    //Data has some crazy 28138232993 (typed, bleh not real) size, and its  [1] is segfault.
+    cout << tiles.get(1,1,0) << endl;
 
     
 

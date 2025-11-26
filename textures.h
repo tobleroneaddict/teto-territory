@@ -3,12 +3,8 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include "include/PerlinNoise/PerlinNoise.hpp"
 #include "include/SDL_image.h"
 #include "vector"
-#include <SDL3/SDL_time.h>
-#include <sstream>
-
 
 //All the textures in the game
 class Game_Textures {

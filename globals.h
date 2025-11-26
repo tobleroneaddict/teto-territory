@@ -8,6 +8,8 @@
 #include "vector"
 #include <SDL3/SDL_time.h>
 #include "textures.h"
+#include <sstream>
+#include <cstdint>
 
 
 extern int* gFrameBuffer;
