@@ -13,6 +13,8 @@
 //All the textures in the game
 class Game_Textures {
     public:
+        SDL_Texture* tile_atlas = nullptr;
+
         SDL_Texture* teto_texture_alt = nullptr;
         SDL_Texture* teto_texture_r = nullptr;
         SDL_Texture* teto_texture_fold = nullptr;
@@ -47,6 +49,7 @@ class Game_Textures {
         SDL_Texture* rocket = nullptr;
     
         bool load(SDL_Renderer* renderer) {
+            tile_atlas = IMG_LoadTexture(renderer, "Assets/atlas.png");
             teto_texture_alt = IMG_LoadTexture(renderer, "Assets/alt-player.png");
             teto_texture_r = IMG_LoadTexture(renderer, "Assets/teto-right.png");
             teto_texture_fold = IMG_LoadTexture(renderer, "Assets/teto-lean.png");

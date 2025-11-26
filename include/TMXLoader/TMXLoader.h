@@ -26,7 +26,7 @@
 #include <fstream>
 #include <memory>
 #include <iostream>
-
+#include <cstring>
 #include "rapidxml.hpp"
 
 #include "TMXMap.h"

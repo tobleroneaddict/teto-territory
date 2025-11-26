@@ -15,7 +15,7 @@
 #include "phone.h"
 
 //World
-#include "TMXLoader/TMXLoader.h"
+#include "include/TMXLoader/TMXLoader.h"
 
 
 //World of all da stuff
@@ -216,6 +216,10 @@ int main() {
     SDL_SetTextureScaleMode(sdl_texture,SDL_SCALEMODE_NEAREST);
     textures = new Game_Textures;
     
+    //Load map
+    TMXLoader *loader = new TMXLoader();
+    loader->loadMap("map", "Tiled/map.tmx");
+    loader->printMapData("map");
 
     
 
@@ -517,6 +521,7 @@ int main() {
 
         SDL_RenderClear(sdl_renderer);
 
+        //Tiling
         int scale = 256;
         tiler.h = scale;
         tiler.w = scale;
@@ -538,10 +543,10 @@ int main() {
 
             }
         }
-
+        //End of tiling
         //Render play field
         SDL_RenderTexture(sdl_renderer,sdl_texture,nullptr,nullptr);
-        
+
 
         //Render enemies, run enemy code
         for (int i = 0; i < (int)world.enemies.size(); i++) {
