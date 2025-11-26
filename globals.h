@@ -17,8 +17,12 @@ extern SDL_Texture* sdl_texture;
 extern Game_Textures* textures;
 extern int WINDOW_WIDTH;
 extern int WINDOW_HEIGHT;
-float lerp(float a, float b, float t);
+extern float RUN_SPEED;
+extern float CAR_SPEED;
 
+
+float lerp(float a, float b, float t);
+float get_distance(float x1, float y1, float x2, float y2);
 
 class Enemy {
 public:
@@ -35,16 +39,24 @@ public:
 };
 
 class Rocket {
-    public:
+public:
         float x, y, vx, vy, scale, rotation;
         float life_timer = 10000.0f; // 10 seconds
         SDL_FRect rect;
+};
+
+//A car (just one for now)
+class Car {
+public:
+    float x, y, xv_own, yv_own; //xv,yv are for if teto is out of the car. when she is in, it = her xvyv. when out, it will continue to drive.
+    bool flip = false; //is bool bc we wanna save it for when teto is not driving
+    SDL_FRect rect;
+    void render(int xoff, int yoff);
 };
     
 //Dropped item
 class Item {
 public:
-    
     SDL_Texture* texture;
     int id = -1;
     float x, y, vx, vy, scale;
@@ -57,6 +69,7 @@ class World_C {
         std::vector<Bullet> bullets;
         std::vector<Item> dropped_items;
         std::vector<Rocket> rockets;
+        Car teto_car; //Teto's car //A car (just one for now)
 };
 
 

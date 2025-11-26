@@ -13,11 +13,11 @@
 //All the textures in the game
 class Game_Textures {
     public:
-        SDL_Texture* teto_texture_l = nullptr;
+        SDL_Texture* teto_texture_alt = nullptr;
         SDL_Texture* teto_texture_r = nullptr;
         SDL_Texture* teto_texture_fold = nullptr;
-    
         SDL_Texture* enemy_texture = nullptr;
+        SDL_Texture* car = nullptr;
     
         SDL_Texture* tiling_texture = nullptr;
         SDL_Texture* sand_texture = nullptr;
@@ -44,10 +44,11 @@ class Game_Textures {
         SDL_Texture* rocket = nullptr;
     
         bool load(SDL_Renderer* renderer) {
-            teto_texture_l = IMG_LoadTexture(renderer, "Assets/teto-left.png");
+            teto_texture_alt = IMG_LoadTexture(renderer, "Assets/alt-player.png");
             teto_texture_r = IMG_LoadTexture(renderer, "Assets/teto-right.png");
             teto_texture_fold = IMG_LoadTexture(renderer, "Assets/teto-lean.png");
             enemy_texture = IMG_LoadTexture(renderer, "Assets/teto-plushie.png");
+            car = IMG_LoadTexture(renderer, "Assets/car.png");
     
             tiling_texture = IMG_LoadTexture(renderer, "Assets/tile.png");
             sand_texture = IMG_LoadTexture(renderer, "Assets/sand.png");
@@ -61,7 +62,7 @@ class Game_Textures {
             big_steppah = IMG_LoadTexture(renderer, "Assets/big-steppah.png");
             apple = IMG_LoadTexture(renderer, "Assets/apple.png");
             bricks = IMG_LoadTexture(renderer, "Assets/bricks.png");
-            agent = IMG_LoadTexture(renderer, "Assets/agent.png");
+            agent = IMG_LoadTexture(renderer, "Assets/muffin-clipart-xl.png");
             rocket = IMG_LoadTexture(renderer, "Assets/rocket.png");
     
 
