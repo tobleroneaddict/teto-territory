@@ -45,9 +45,20 @@ bool TMX::load(const std::string &filename) {
     return true;
 }
 
+//get tile id from xy [0]
 int TMX::get(int x, int y,int layer) {
     TMX_LAYER& curr = map->layers[layer];
     int off = y*map->width + x;
     return curr.data[off];
 
+}
+
+//get atlas xy from id
+void TMX::coordinate(int tileID, int &x, int &y) {
+    int tx = (tileID % 10)-1; //tile x
+    int ty = floor(tileID / 10);
+    x = tx * map->tilewidth;
+    y = ty * map->tileheight;
+    
+    return;
 }

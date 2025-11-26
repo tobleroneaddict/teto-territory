@@ -29,4 +29,6 @@ public:
     
     //get id at x,y, layer ID
     int get(int x, int y, int layer = 1);
+                        //in       out    out
+    void coordinate(int tileID, int &x, int &y);
 };

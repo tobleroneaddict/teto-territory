@@ -525,14 +525,20 @@ int main() {
         SDL_RenderClear(sdl_renderer);
 
         //Tiling
-        int scale = 256;
+        int scale = 64;
         tiler.h = scale;
         tiler.w = scale;
+        SDL_FRect srcrect;
+        srcrect.h = scale;
+        srcrect.w = scale;
 
         for (int y = -scale; y < WINDOW_HEIGHT+scale; y += scale) {
                 
             for (int x = -scale; x < WINDOW_WIDTH+scale; x += scale ) {
                 
+                
+                //cout << atlasx << endl;
+
                 float offx = fmod(-teto.x, (float)scale);
                 if (offx < 0) offx += (float)scale;
 
@@ -542,7 +548,17 @@ int main() {
                 tiler.x = offx + x;
                 tiler.y = offy + y;
 
-                SDL_RenderTexture(sdl_renderer,textures->tiling_texture,nullptr,&tiler);
+                int atlasx,atlasy;
+                cout << abs(floor(x / scale)) << endl;
+                int tileID = tiles.get(
+                    abs(floor(offx+x / scale)),
+                    abs(floor(offy+y / scale)),
+                0);
+                tiles.coordinate(tileID,atlasx,atlasy);
+                srcrect.x = atlasx;
+                srcrect.y = atlasy;
+                
+                SDL_RenderTexture(sdl_renderer,textures->tile_atlas,&srcrect,&tiler);
 
             }
         }
