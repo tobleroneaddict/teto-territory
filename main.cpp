@@ -206,7 +206,7 @@ void Teto_C::fire_weapon() {
 int main() {
     gFrameBuffer = new int[WINDOW_WIDTH * WINDOW_HEIGHT];
     sdl_window = SDL_CreateWindow("Rainbet 2", WINDOW_WIDTH, WINDOW_HEIGHT,SDL_WINDOW_RESIZABLE);
-    
+    SDL_SetRenderVSync(sdl_renderer, 0); //i had to do this to fix stuttying
     sdl_renderer = SDL_CreateRenderer(sdl_window, NULL);
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
     SDL_SetTextureScaleMode(sdl_texture,SDL_SCALEMODE_NEAREST);
@@ -281,7 +281,7 @@ int main() {
 
     teto.teto_rendering = true;
     //Spawn enemies
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 500; i++) {
         Enemy enemeeee;
         enemeeee.rendering = true;
         enemeeee.id = rand();
@@ -309,7 +309,6 @@ int main() {
         lehorse.vx = (rand() % 3)-1; lehorse.vy = (rand() % 3)-1;
         if (lehorse.vx == 0) lehorse.vx = 1;
         if (lehorse.vy == 0) lehorse.vy = 1;
-        cout << world.horses.size() << endl;
 
         lehorse.x = rand()  % MAX_WORLD_X;
         lehorse.y = rand()  % MAX_WORLD_Y;
@@ -318,6 +317,10 @@ int main() {
 
     while (!stop)
     {
+        //dTs
+        LAST = NOW;NOW = SDL_GetPerformanceCounter(); deltaTime = (double)((NOW - LAST)*1000 / (double)SDL_GetPerformanceFrequency() );
+        
+        
         SDL_GetWindowSizeInPixels(sdl_window,&WINDOW_WIDTH,&WINDOW_HEIGHT);
 
         teto.player_rect.x = (WINDOW_WIDTH/2)-40;
@@ -330,15 +333,11 @@ int main() {
         SDL_GetMouseState(&mx,&my);
 
 
-        //dTs
-        LAST = NOW;
-        NOW = SDL_GetPerformanceCounter();
+        
    
         //Run teto user motion 
         teto.run_motion();
-
-
-        deltaTime = (double)((NOW - LAST)*1000 / (double)SDL_GetPerformanceFrequency() );
+        
 
         //Oneshot key events
         SDL_Event e;
@@ -474,7 +473,7 @@ int main() {
                 world.dropped_items.push_back(lilitem);
             }
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_K) { teto.alt = !teto.alt;}
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_G) { /*if (!teto.alt)*/ teto.holding_weapon = !teto.holding_weapon; }
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_G) { teto.holding_weapon = !teto.holding_weapon; }
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_F) { 
                 Rocket newrocket; newrocket.x = teto.x; newrocket.y = teto.y + 80;
                 newrocket.scale = 1; newrocket.vy -= 3.0f;
@@ -538,7 +537,7 @@ int main() {
 
         //Render play field
         SDL_RenderTexture(sdl_renderer,sdl_texture,nullptr,nullptr);
-
+        
 
         //Render enemies, run enemy code
         for (int i = 0; i < (int)world.enemies.size(); i++) {
@@ -621,7 +620,7 @@ int main() {
             SDL_RenderTexture(sdl_renderer,thing->texture,nullptr,&thingrect);
 
         }
-
+        
 
         //Render player (on top)
         if (teto.teto_rendering) {
@@ -764,7 +763,7 @@ int main() {
 
 
         //END HORSE
-
+        
         //RENDER UNREGISTERED FIREARM
         if (mx > WINDOW_WIDTH/2) {
             gun_rect.w = -180;
@@ -916,8 +915,10 @@ int main() {
 
 
         SDL_RenderPresent(sdl_renderer);
-        //SDL_GL_SwapWindow(sdl_window);
+        
 
+        
+        
         SDL_Delay(4); //dont remove this its black magic
     }
     
