@@ -18,6 +18,7 @@ class Game_Textures {
         SDL_Texture* teto_texture_fold = nullptr;
         SDL_Texture* enemy_texture = nullptr;
         SDL_Texture* car = nullptr;
+        SDL_Texture* horse = nullptr;
     
         SDL_Texture* tiling_texture = nullptr;
         SDL_Texture* sand_texture = nullptr;
@@ -51,6 +52,7 @@ class Game_Textures {
             teto_texture_fold = IMG_LoadTexture(renderer, "Assets/teto-lean.png");
             enemy_texture = IMG_LoadTexture(renderer, "Assets/teto-plushie.png");
             car = IMG_LoadTexture(renderer, "Assets/car.png");
+            horse = IMG_LoadTexture(renderer, "Assets/horse.png");
     
             tiling_texture = IMG_LoadTexture(renderer, "Assets/tile.png");
             sand_texture = IMG_LoadTexture(renderer, "Assets/sand.png");

@@ -19,7 +19,8 @@ extern int WINDOW_WIDTH;
 extern int WINDOW_HEIGHT;
 extern float RUN_SPEED;
 extern float CAR_SPEED;
-
+extern int MAX_WORLD_X;
+extern int MAX_WORLD_Y;
 
 float lerp(float a, float b, float t);
 float get_distance(float x1, float y1, float x2, float y2);
@@ -63,6 +64,13 @@ public:
     float x, y, vx, vy, scale;
 };
 
+//Horse racing 
+class Horse {
+public:
+    float x,y, vx, vy; //vx vy are -1,1
+    
+    int colour;
+};
 
 class World_C {
     public:
@@ -70,6 +78,7 @@ class World_C {
         std::vector<Bullet> bullets;
         std::vector<Item> dropped_items;
         std::vector<Rocket> rockets;
+        std::vector<Horse> horses;
         Car teto_car; //Teto's car //A car (just one for now)
 };
 

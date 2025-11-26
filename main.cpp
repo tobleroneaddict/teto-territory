@@ -57,6 +57,10 @@ SDL_FRect ch_rect;
 
 SDL_FRect bullet_rect;
 
+SDL_FRect horse_rect;
+
+
+
 class Teto_C {
 public:
     float x,y,xv,yv, gun_out_x,gun_out_y;
@@ -269,6 +273,8 @@ int main() {
     
     bullet_rect.h = 32;
     bullet_rect.w = 32;
+    horse_rect.h = 29*2;
+    horse_rect.w = 33*2;
 
 
     SDL_Delay(100); //help stuff not die
@@ -279,23 +285,36 @@ int main() {
         Enemy enemeeee;
         enemeeee.rendering = true;
         enemeeee.id = rand();
-        enemeeee.x  = rand()  % 50000;
-        enemeeee.y  = rand()  % 50000;
+        enemeeee.x  = rand()  % MAX_WORLD_X;
+        enemeeee.y  = rand()  % MAX_WORLD_Y;
         world.enemies.push_back(enemeeee);
     }
 
     SDL_HideCursor();
 
     //Randomly spawn beers
-    for (int i = 0; i < 200; i++) {
+    for (int i = 0; i < 100; i++) {
         Item lilitem;               lilitem.texture = textures->capsule;
-        lilitem.x = rand()  % 50000;
-        lilitem.y = rand()  % 50000;
+        lilitem.x = rand()  % MAX_WORLD_X;
+        lilitem.y = rand()  % MAX_WORLD_Y;
         lilitem.scale = 0.2f;
         lilitem.id = 9;
         world.dropped_items.push_back(lilitem);
     }
     
+    //Randomly spawn horses
+
+    for (int i = 0; i < 200; i++) {
+        Horse lehorse;  lehorse.colour = rand() % 10;
+        lehorse.vx = (rand() % 3)-1; lehorse.vy = (rand() % 3)-1;
+        if (lehorse.vx == 0) lehorse.vx = 1;
+        if (lehorse.vy == 0) lehorse.vy = 1;
+        cout << world.horses.size() << endl;
+
+        lehorse.x = rand()  % MAX_WORLD_X;
+        lehorse.y = rand()  % MAX_WORLD_Y;
+        world.horses.push_back(lehorse);
+    }
 
     while (!stop)
     {
@@ -478,7 +497,17 @@ int main() {
             //BRAKES!!!!!!    // USES KEY DOWN / UP
             if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_SPACE) { world.teto_car.brakes = true; teto.xv = 0; teto.yv = 0;}
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_SPACE) { world.teto_car.brakes = false;}
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_H) { //spawn horse
+                Horse lehorse;  lehorse.colour = rand() % 10;
+                lehorse.vx = (rand() % 3)-1; lehorse.vy = (rand() % 3)-1;
+                if (lehorse.vx == 0) lehorse.vx = 1;
+                if (lehorse.vy == 0) lehorse.vy = 1;
+                cout << world.horses.size() << endl;
 
+                lehorse.x = teto.x;
+                lehorse.y = teto.y;
+                world.horses.push_back(lehorse);
+            }
 
         }
         
@@ -657,13 +686,13 @@ int main() {
             float distanceR = sqrtf(dxR*dxR+dy*dy);
 
             //Handle player's car collision with enemy car
-            if (distance < 0.0001f) {continue;}if (distanceL < 0.0001f) {continue;}if (distanceR < 0.0001f) {continue;}
+            if (distance < 0.1f) {continue;}if (distanceL < 0.1f) {continue;}if (distanceR < 0.1f) {continue;}
             if (distanceL < 100 || distance < 100 || distanceR < 100) { //car is like [o o o]
 
                 //normalize...
                 float nx = dx / distance;
                 float ny = dy / distance;
-                
+                if (nx != nx || ny != ny) continue; //NaN
                 curr->xv -= nx * total_car_v * 2.5f;
                 curr->yv -= ny * total_car_v * 2.5f;
                 //Apply 3rd law
@@ -679,6 +708,62 @@ int main() {
         world.teto_car.render(teto.x,teto.y);
 
         //END CAR
+
+        //START HORSE RACE TESTS
+
+        SDL_FRect horse_srcRect;
+        horse_srcRect.h = 30;
+        horse_srcRect.w = 29;
+        for (int i = 0; i < (int)world.horses.size(); i++) {
+            Horse* b = &world.horses[i];
+            if (b == nullptr) { break;}
+            //Velocity
+            b->x += b->vx;
+            b->y += b->vy;
+            horse_srcRect.y = (33*i); //type
+            //Set to rect
+            horse_rect.x = b->x - teto.x + WINDOW_WIDTH/2 -horse_rect.w/2;
+            horse_rect.y = b->y - teto.y + WINDOW_HEIGHT/2 -horse_rect.h/2;
+            SDL_RenderTexture(sdl_renderer,textures->horse,&horse_srcRect,&horse_rect);
+
+            //Hit testing
+            Enemy* curr;
+            //Loop thru each enemy
+
+
+            //Wall collision
+            if (b->x > MAX_WORLD_X || b->y > MAX_WORLD_Y) {
+                //cout << "e\n";
+                b->vx = -b->vx; b->vy = -b->vy;
+            }
+
+
+            for (int plush = 0; plush < (int)world.enemies.size(); plush++) {
+                curr = &world.enemies[plush];
+                float dx = (b->x - curr->x);
+                float dy = (b->y - curr->y);
+
+                float distance = sqrtf(dx*dx+dy*dy);
+
+                if (distance < 0.0001f) continue;
+                if (distance < 80) {
+
+                    //Horse Test type bouncing
+                    if (fabs(dx) > fabs(dy)) {
+                        b->vx = -b->vx;
+                    } else {
+                        b->vy = -b->vy;
+                    }
+
+                    //curr->damage_cooldown = 1000; //RESET COOLDOWN
+                } 
+            }
+            
+        }
+
+
+
+        //END HORSE
 
         //RENDER UNREGISTERED FIREARM
         if (mx > WINDOW_WIDTH/2) {
@@ -827,7 +912,7 @@ int main() {
         //crosshair
         ch_rect.x = mx - ch_rect.w + textures->ch->w/2;
         ch_rect.y = my - ch_rect.h + textures->ch->h/2;
-        if ( teto.bullet_cooldown < 10) SDL_RenderTexture(sdl_renderer,textures->ch,nullptr,&ch_rect);
+        if (teto.bullet_cooldown < 10) SDL_RenderTexture(sdl_renderer,textures->ch,nullptr,&ch_rect);
 
 
         SDL_RenderPresent(sdl_renderer);
