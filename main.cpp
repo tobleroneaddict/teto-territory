@@ -14,6 +14,10 @@
 #include "blackjack_engine.h"
 #include "phone.h"
 
+//World
+#include "TMXLoader/TMXLoader.h"
+
+
 //World of all da stuff
 World_C world;
 

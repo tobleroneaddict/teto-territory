@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -I include/PerlinNoise/ -O2 -Wall
+CXXFLAGS = -I include/TMXLoader -O2 -Wall
 LIBS = -lSDL3 -lSDL3_image
 
 SRCS = $(wildcard *.cpp)
