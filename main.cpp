@@ -460,7 +460,7 @@ int main() {
                 newrocket.scale = 1; newrocket.vy -= 3.0f;
                 float dx = mx - (WINDOW_WIDTH/2);
                 float dy = my - (WINDOW_HEIGHT/2);
-                float nx = dx / WINDOW_WIDTH * 2.25f;
+                float nx = dx / 1300 * 2.25f;
                 newrocket.vy += (dy / WINDOW_HEIGHT) * 2;
                 newrocket.vx = nx * 1;
 
@@ -759,8 +759,8 @@ int main() {
                 float distance = sqrtf(dx*dx+dy*dy);
 
                 if (distance < 0.0001f) continue;
-                //Only when going donw
-                if (distance < 30 && r->vy > 0) {
+                
+                if (distance < 30) {
 
                     //normalize...
                     float nx = dx / distance;

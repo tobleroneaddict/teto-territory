@@ -23,8 +23,11 @@ float get_distance(float x1, float y1, float x2, float y2) {
 
                 //p.x      //p.y  passed in
 void Car::render(int xoff, int yoff) {
-    rect.x = x - xoff + rect.w/2 + 100; //draw in center
-    rect.y = y - yoff + rect.h/2 + 150;
+    rect.x = x - xoff + WINDOW_WIDTH/2 - rect.w/2 ;
+    rect.y = y - yoff + WINDOW_HEIGHT/2 - rect.h/2 ;
+    
+    //rect.x = x - xoff + rect.w/2 + 100; //draw in center
+    //rect.y = y - yoff + rect.h/2 + 150;
     if (flip) {
         SDL_RenderTextureRotated(sdl_renderer,textures->car,nullptr,&rect,0,nullptr,SDL_FLIP_HORIZONTAL);
     } else {
