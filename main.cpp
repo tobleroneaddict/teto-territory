@@ -217,9 +217,9 @@ int main() {
     textures = new Game_Textures;
     
     //Load map
-    TMXLoader *loader = new TMXLoader();
-    loader->loadMap("map", "Tiled/map.tmx");
-    loader->printMapData("map");
+    //TMXLoader *loader = new TMXLoader();
+    //loader->loadMap("map", "Tiled/map.tmx");
+    //loader->printMapData("map");
 
     
 
