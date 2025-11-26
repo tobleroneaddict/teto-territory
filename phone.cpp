@@ -61,9 +61,13 @@ void Phone_C::play_rainbet() {
     rainbet_hs.y = phone_rect.y + 500;
     rainbet_hs.x = WINDOW_WIDTH - 365;
     
-    if (blackjack->bet_locked_in) {
-        SDL_RenderTexture(sdl_renderer,textures->hitstand,nullptr,&rainbet_hs);
-    } else {
+    if (blackjack->bet_locked_in) { //round done! new game
+        if (blackjack->won || blackjack->bust || blackjack->dealer_won) {
+            SDL_RenderTexture(sdl_renderer,textures->newgame,nullptr,&rainbet_hs);
+        } else { //ingame
+            SDL_RenderTexture(sdl_renderer,textures->hitstand,nullptr,&rainbet_hs);
+        }
+    } else { //betting sreen
         SDL_RenderTexture(sdl_renderer,textures->playbutton,nullptr,&rainbet_hs);
 
     }

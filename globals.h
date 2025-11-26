@@ -50,6 +50,7 @@ class Car {
 public:
     float x, y, xv_own, yv_own; //xv,yv are for if teto is out of the car. when she is in, it = her xvyv. when out, it will continue to drive.
     bool flip = false; //is bool bc we wanna save it for when teto is not driving
+    bool brakes = false;
     SDL_FRect rect;
     void render(int xoff, int yoff);
 };

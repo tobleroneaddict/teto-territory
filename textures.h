@@ -39,7 +39,9 @@ class Game_Textures {
         SDL_Texture* phone = nullptr;
         SDL_Texture* card_atlas = nullptr;
         SDL_Texture* hitstand = nullptr;
+        SDL_Texture* newgame = nullptr;
         SDL_Texture* playbutton = nullptr;
+        
         
         SDL_Texture* rocket = nullptr;
     
@@ -54,7 +56,7 @@ class Game_Textures {
             sand_texture = IMG_LoadTexture(renderer, "Assets/sand.png");
             gun_texture = IMG_LoadTexture(renderer, "Assets/ak-47.png");
             ch = IMG_LoadTexture(renderer, "Assets/crosshair.png");
-            bullet = IMG_LoadTexture(renderer, "Assets/teto-left.png");
+            bullet = IMG_LoadTexture(renderer, "Assets/capsule.png");
     
             flag = IMG_LoadTexture(renderer, "Assets/flag.png");
             bomb = IMG_LoadTexture(renderer, "Assets/bomb.png");
@@ -72,6 +74,7 @@ class Game_Textures {
     
             card_atlas = IMG_LoadTexture(renderer, "Assets/UI/cards.png");
             hitstand = IMG_LoadTexture(renderer, "Assets/UI/hitstand.png");
+            newgame = IMG_LoadTexture(renderer, "Assets/UI/newgame.png");
             playbutton = IMG_LoadTexture(renderer, "Assets/UI/playbutton.png");
     
 

@@ -72,7 +72,7 @@ public:
     bool drunk = false;
     float drunk_timer = 0;
     bool driving = false;
-    bool alt = true;
+    bool alt = false;
 
     bool teto_rendering = true;
     SDL_Texture* teto_textureL;
@@ -140,6 +140,7 @@ void Teto_C::run_motion() { //also handles bullet cooldown
 
         //Drag factor
         float drag = (driving) ? 0.99f: 0.9f;
+        if (driving) {drag = (world->teto_car.brakes) ? 0.75f: drag;} //HIT DA BRAKES!! DURING Spacebar
         xv *= drag;
         yv *= drag;
         
@@ -151,7 +152,7 @@ void Teto_C::run_motion() { //also handles bullet cooldown
 
         //bullet cooldown
         if (bullet_cooldown < 0) { bullet_cooldown = 0;} //if below zero, set to zero
-        else {bullet_cooldown -= deltaTime; } //otherwise, decrease
+        else {bullet_cooldown -= deltaTime; } //otherwise, decreases
 
 }
 
@@ -187,9 +188,9 @@ void Teto_C::fire_weapon() {
 
     float nx = dx / ebullet_mouse_dist_to_norm;
     float ny = dy / ebullet_mouse_dist_to_norm;
-    
-    ebullet.vx = nx * 10;
-    ebullet.vy = ny * 10;
+                            //Tack on player v
+    ebullet.vx = (nx * 10) +xv;
+    ebullet.vy = (ny * 10) +yv;
     
     
 
@@ -274,27 +275,26 @@ int main() {
 
     teto.teto_rendering = true;
     //Spawn enemies
-    for (int i = 0; i < 500; i++) {
+    for (int i = 0; i < 1000; i++) {
         Enemy enemeeee;
         enemeeee.rendering = true;
         enemeeee.id = rand();
-        enemeeee.x  = rand()  % 10000;
-        enemeeee.y  = rand()  % 10000;
+        enemeeee.x  = rand()  % 50000;
+        enemeeee.y  = rand()  % 50000;
         world.enemies.push_back(enemeeee);
     }
 
     SDL_HideCursor();
 
     //Randomly spawn beers
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 200; i++) {
         Item lilitem;               lilitem.texture = textures->capsule;
-        lilitem.x = rand()  % 10000;
-        lilitem.y = rand()  % 10000;
+        lilitem.x = rand()  % 50000;
+        lilitem.y = rand()  % 50000;
         lilitem.scale = 0.2f;
         lilitem.id = 9;
         world.dropped_items.push_back(lilitem);
     }
-    
     
 
     while (!stop)
@@ -454,7 +454,8 @@ int main() {
                 lilitem.scale = 0.3f;   lilitem.id = 9;
                 world.dropped_items.push_back(lilitem);
             }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_G) { if (!teto.alt) teto.holding_weapon = !teto.holding_weapon; }
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_K) { teto.alt = !teto.alt;}
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_G) { /*if (!teto.alt)*/ teto.holding_weapon = !teto.holding_weapon; }
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_F) { 
                 Rocket newrocket; newrocket.x = teto.x; newrocket.y = teto.y + 80;
                 newrocket.scale = 1; newrocket.vy -= 3.0f;
@@ -474,6 +475,9 @@ int main() {
                 //cout << get_distance(teto.x,teto.y,world.teto_car.x - world.teto_car.rect.w/2,world.teto_car.y - world.teto_car.rect.h/2) << endl;
                 // ...... can put more here !!
             }
+            //BRAKES!!!!!!    // USES KEY DOWN / UP
+            if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_SPACE) { world.teto_car.brakes = true; teto.xv = 0; teto.yv = 0;}
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_SPACE) { world.teto_car.brakes = false;}
 
 
         }
@@ -535,8 +539,8 @@ int main() {
             float randX = 0.5-(float)rand() / RAND_MAX;
             float randY = 0.5-(float)rand() / RAND_MAX;
 
-            food.x = curr->x - teto.x + WINDOW_WIDTH/2 - 25;
-            food.y = curr->y - teto.y + WINDOW_HEIGHT/2 - 25;
+            food.x = curr->x - teto.x + WINDOW_WIDTH/2 - food.w/2;
+            food.y = curr->y - teto.y + WINDOW_HEIGHT/2 - food.h/2;
             
 
             if (teto.holding_weapon && scare_factor < 300) {
@@ -546,9 +550,13 @@ int main() {
 
             if (curr->rendering) {
                 if (teto.alt) {
-                    SDL_RenderTexture(sdl_renderer,textures->agent,nullptr,&food);
+                    if (curr->id % 2) {
+                        SDL_RenderTextureRotated(sdl_renderer,textures->agent,nullptr,&food,0,nullptr,SDL_FLIP_NONE);
+                    } else { SDL_RenderTextureRotated(sdl_renderer,textures->agent,nullptr,&food,0,nullptr,SDL_FLIP_HORIZONTAL); }
                 } else {
-                    SDL_RenderTexture(sdl_renderer,textures->enemy_texture,nullptr,&food);
+                    if (curr->id % 2) {
+                        SDL_RenderTextureRotated(sdl_renderer,textures->enemy_texture,nullptr,&food,0,nullptr,SDL_FLIP_NONE);
+                    } else { SDL_RenderTextureRotated(sdl_renderer,textures->enemy_texture,nullptr,&food,0,nullptr,SDL_FLIP_HORIZONTAL); }
                 }
             }
         }
@@ -610,6 +618,8 @@ int main() {
             //}
         }
 
+        //STARTCAR
+
         //If player isnt driving the car has to ZOOM
         if (teto.driving) {
             world.teto_car.xv_own = teto.xv;
@@ -638,31 +648,37 @@ int main() {
         for (int plush = 0; plush < (int)world.enemies.size(); plush++) {
             curr = &world.enemies[plush];
             float dx = (world.teto_car.x - curr->x);
-            float dy = (world.teto_car.y - curr->y);
+            float dxL = (world.teto_car.x - curr->x) - 100;
+            float dxR = (world.teto_car.x - curr->x) + 100;
+            float dy = (world.teto_car.y - curr->y) + 100; //car collider
 
-            float distance = sqrtf(dx*dx+dy*dy);
+            float distance = sqrtf(dxL*dx+dy*dy);
+            float distanceL = sqrtf(dxL*dxL+dy*dy);
+            float distanceR = sqrtf(dxR*dxR+dy*dy);
 
-            if (distance < 0.0001f) continue;
-            if (distance < 100) {
+            //Handle player's car collision with enemy car
+            if (distance < 0.0001f) {continue;}if (distanceL < 0.0001f) {continue;}if (distanceR < 0.0001f) {continue;}
+            if (distanceL < 100 || distance < 100 || distanceR < 100) { //car is like [o o o]
 
                 //normalize...
                 float nx = dx / distance;
                 float ny = dy / distance;
                 
-                curr->xv -= nx * total_car_v * 2;
-                curr->yv -= ny * total_car_v * 2;
+                curr->xv -= nx * total_car_v * 2.5f;
+                curr->yv -= ny * total_car_v * 2.5f;
                 //Apply 3rd law
                 world.teto_car.xv_own += total_car_v * nx / 2;
                 world.teto_car.yv_own += total_car_v * ny / 2;
-                teto.xv += total_car_v * nx / 2;
-                teto.yv += total_car_v * ny / 2;
+                teto.xv += total_car_v * nx;
+                teto.yv += total_car_v * ny;
                 
                 curr->damage_cooldown = 1000; //RESET COOLDOWN
             } 
         }
 
-
         world.teto_car.render(teto.x,teto.y);
+
+        //END CAR
 
         //RENDER UNREGISTERED FIREARM
         if (mx > WINDOW_WIDTH/2) {
@@ -675,8 +691,20 @@ int main() {
             gun_rect.x = teto.player_rect.x - 50;
             gun_rect.x -= (10-(teto.bullet_cooldown / 10));
         }
-        if (teto.holding_weapon && !teto.drunk)    SDL_RenderTexture(sdl_renderer,textures->gun_texture,nullptr,&gun_rect);
-
+        //angle to cursor
+        { //scope
+            float dx = mx - (WINDOW_WIDTH/2);
+            float dy = my - (WINDOW_HEIGHT/2);
+            
+            float ebullet_mouse_dist_to_norm = sqrt(dx*dx+dy*dy);
+        
+            float nx = dx / ebullet_mouse_dist_to_norm;
+            float ny = dy / ebullet_mouse_dist_to_norm; 
+            float isonright = (mx > (WINDOW_WIDTH/2)) ? 195.0f : 0.0f;
+            
+            if (teto.holding_weapon && !teto.drunk)    SDL_RenderTextureRotated(sdl_renderer,textures->gun_texture,nullptr,&gun_rect,((atan2(ny,nx)+90.0f)*57.9f)+isonright,nullptr,SDL_FLIP_NONE); //The gun rect is just flipped
+            //if (teto.holding_weapon && !teto.drunk) SDL_RenderTexture(sdl_renderer,textures->gun_texture,nullptr,&gun_rect);
+        }
 
         //Render bullet & do hit physics
         for (int i = 0; i < (int)world.bullets.size(); i++) {
