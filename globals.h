@@ -82,7 +82,7 @@ public:
     SDL_FRect thisblock;
     TMX* tiles;
     SDL_Texture* atlas;
-    void render(int center_block_id);
+    void render_UI_Block(int center_block_id,bool drawfg_thing);
 };
 
 //Lotsa things
@@ -94,10 +94,10 @@ class World_C {
         std::vector<Rocket> rockets;
         std::vector<Horse> horses;
         
-        int selected_block = 10;
+        int selected_block = 0;
 
         //Top UI bar
-        UI_Blocks ui_block_selector;
+        UI_Blocks ui_block_selector; bool draw_on_foreground = false;
 
         TMX* tiles;
         SDL_FRect tiler; //Tile texturer

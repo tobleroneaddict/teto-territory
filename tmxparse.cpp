@@ -53,6 +53,13 @@ int TMX::get(int x, int y,int layer) {
 
 }
 
+void TMX::setblock(int x, int y, int layer, int id) {
+    TMX_LAYER& curr = map->layers[layer];
+    int off = y*map->width + x;
+    curr.data[off] = id;
+    return;
+}
+
 //get atlas xy from id
 void TMX::coordinate(int tileID, int &x, int &y) {
     int tx = (tileID - 1) % 10; //tile x

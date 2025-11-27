@@ -16,6 +16,7 @@
 //World
 #include "tmxparse.h"
 
+bool fullscreen = false;
 
 
 //World of all da stuff
@@ -64,6 +65,7 @@ SDL_FRect bullet_rect;
 SDL_FRect horse_rect;
 
 
+SDL_FRect vingette_rect;
 
 class Teto_C {
 public:
@@ -229,6 +231,7 @@ int main() {
 
     //Load tiles class into the block selecter UI
     world.ui_block_selector.tiles = world.tiles;
+    world.selected_block = 13; //set default to brick
 
     
 
@@ -259,8 +262,8 @@ int main() {
     teto.world = &world;
     
 
-    teto.x = 0;
-    teto.y = 0;
+    teto.x = 20*64;
+    teto.y = 23*64;
     
     world.teto_car.x = teto.x;
     world.teto_car.y = teto.y + 300;
@@ -270,6 +273,8 @@ int main() {
     food.h = 120;
     food.w = 230;
 
+    vingette_rect.x = 0;
+    vingette_rect.y = 0;
     
 
     world.tiler.h = 256;
@@ -295,20 +300,20 @@ int main() {
     horse_rect.h = 29*2;
     horse_rect.w = 33*2;
 
-
     SDL_Delay(100); //help stuff not die
 
     teto.teto_rendering = true;
     //Spawn enemies
-    for (int i = 0; i < 500; i++) {
+    for (int i = 0; i < 100; i++) {
         Enemy enemeeee;
-        enemeeee.rendering = false;
+        enemeeee.rendering = true;
         enemeeee.id = rand();
         enemeeee.x  = rand()  % MAX_WORLD_X;
         enemeeee.y  = rand()  % MAX_WORLD_Y;
         world.enemies.push_back(enemeeee);
     }
 
+    
     SDL_HideCursor();
 
     //Randomly spawn beers
@@ -351,9 +356,9 @@ int main() {
         
         SDL_GetMouseState(&mx,&my);
 
-
+        SDL_SetRenderDrawColor(sdl_renderer, 0, 150, 150, SDL_ALPHA_OPAQUE);
         
-   
+
         //Run teto user motion 
         teto.run_motion();
         
@@ -373,15 +378,17 @@ int main() {
 
 
             //THIS IS WHERE TO PUT CLICK EVENTS!!!!!!!!!!!!!!!!!
-            //Shoot bullet
+            //LEFT CLICK EVENTS
             if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
             {
 
-                //Phone open
+                //Phone open/close
                 if (mx < WINDOW_WIDTH - 67 && mx > WINDOW_WIDTH - 400 && my > phone.phone_rect.y && my < phone.phone_rect.y + 115) {
                     phone.active = !phone.active;
                     
-                } else if (mx < WINDOW_WIDTH - 67 && mx > WINDOW_WIDTH - 400 && my > phone.phone_rect.y + 115)  {
+                } //END phone toggle
+                //Phone screenactions
+                else if (mx < WINDOW_WIDTH - 67 && mx > WINDOW_WIDTH - 400 && my > phone.phone_rect.y + 115)  {
                     //Phone screen events
                     //phone.rainbet_hs.y = phone.phone_rect.y + 500;
                     //phone.rainbet_hs.x = WINDOW_WIDTH - 365;
@@ -403,10 +410,33 @@ int main() {
                         }
                     }
 
-                }
+                } //END phone screen actions
                 else {
+                    //ELSEWHERE (Not phone)
                     //Gun    
                     if (teto.bullet_cooldown < 10 && teto.holding_weapon) teto.fire_weapon();
+                    if (!teto.holding_weapon) {
+                        //Block place
+                        //mouse to world space
+                        // int tx = teto.x + (mx - WINDOW_WIDTH/2);
+                        // int ty = teto.y + (my - WINDOW_HEIGHT/2);
+                        // tx = floor(tx / 64);
+                        // ty = floor(ty / 64);
+                        //cout << tx << " | " << ty << "\n";
+                        highlight.x = mx - highlight.w;
+                        highlight.y = my - highlight.h;
+                        float wx = mx + teto.x;
+                        float wy = my + teto.y;
+                        wx = floor(wx / 64.0f)-10;
+                        wy = floor(wy / 64.0f)-7;
+
+                        //cout <<wx << endl;
+
+                        //Drop the selected block in
+                        tiles.setblock(wx,wy,(world.draw_on_foreground) ? 1 : 0,world.selected_block);
+
+                    }
+
                 }
 
                 
@@ -414,7 +444,7 @@ int main() {
                 
 
             }
-
+            //MOUSE DONE NOW KEYS
             //Add flag on E
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_1) {
 
@@ -531,6 +561,11 @@ int main() {
             }
             //Show/hide top layer
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_T) {world.hide_top = !world.hide_top;}
+            //Switch draw on foreground
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_Q) {world.draw_on_foreground = !world.draw_on_foreground;}
+            //Fullscreen
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_F11) {fullscreen = !fullscreen; SDL_SetWindowFullscreen(sdl_window,fullscreen);}
+
 
             //Scrolling block
             if (e.type == SDL_EVENT_MOUSE_WHEEL) { 
@@ -693,6 +728,8 @@ int main() {
             world.teto_car.flip = teto.xv < 0;
         } 
         //Now do car physics (regardless of driving)
+        // Respawn 
+        if (world.teto_car.x < 0 || world.teto_car.y < 0 || world.teto_car.x > tiles.map->width*64 || world.teto_car.y > tiles.map->height*64) {world.teto_car.x = 600;world.teto_car.y = 600; world.teto_car.xv_own = 0; world.teto_car.yv_own = 0;}
         Enemy* curr;
         float total_car_v = sqrt((world.teto_car.xv_own * world.teto_car.xv_own) + (world.teto_car.yv_own * world.teto_car.yv_own));
         //Loop thru each enemy
@@ -926,6 +963,20 @@ int main() {
         //WORLD RENDERING Tiling (FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)
         if (!world.hide_top) world.renderLayer(teto.x,teto.y,1,world.tiles);
 
+        //BLOCK HIGHLIGHTER
+        //Lock to tile, block highlighting.
+        highlight.x = mx - highlight.w;
+        highlight.y = my - highlight.h;
+        float wx = mx + teto.x;
+        float wy = my + teto.y;
+        wx = floor(wx / 64.0f) * 64;
+        wy = floor(wy / 64.0f) * 64;
+        highlight.x = wx - teto.x;
+        highlight.y = wy - teto.y;
+        SDL_RenderTexture(sdl_renderer,textures->block_highlight,nullptr,&highlight);
+
+        //END BLOCK HL
+
         //PHONE RENDERING
         SDL_RenderTexture(sdl_renderer,textures->phone,nullptr,&phone.phone_rect);
 
@@ -941,7 +992,7 @@ int main() {
         phone.update_phone();
 
         //RENDER BLOCK UI
-        world.ui_block_selector.render(world.selected_block);
+        world.ui_block_selector.render_UI_Block(world.selected_block,world.draw_on_foreground);
 
 
         //crosshair
@@ -949,17 +1000,14 @@ int main() {
         ch_rect.y = my - ch_rect.h + textures->ch->h/2;
         if (teto.bullet_cooldown < 10) SDL_RenderTexture(sdl_renderer,textures->ch,nullptr,&ch_rect);
 
-        //Lock to tile, block highlighting.
-        highlight.x = mx - highlight.w;
-        highlight.y = my - highlight.h;
-        float wx = mx + teto.x;
-        float wy = my + teto.y;
-        wx = floor(wx / 64.0f) * 64;
-        wy = floor(wy / 64.0f) * 64;
-        highlight.x = wx - teto.x;
-        highlight.y = wy - teto.y;
-        SDL_RenderTexture(sdl_renderer,textures->block_highlight,nullptr,&highlight);
-
+        
+        //Vingette if drunk
+        if (teto.drunk) {
+            vingette_rect.h = WINDOW_HEIGHT;
+            vingette_rect.w = WINDOW_WIDTH;
+            
+            SDL_RenderTexture(sdl_renderer,textures->vingette,nullptr,&vingette_rect);
+        }
         SDL_RenderPresent(sdl_renderer);
         
 

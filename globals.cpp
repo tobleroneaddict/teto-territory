@@ -40,7 +40,7 @@ void Car::render(int xoff, int yoff) {
 }
 
 //Render the block selector
-void UI_Blocks::render(int center_block_id) {   //Block selector UI
+void UI_Blocks::render_UI_Block(int center_block_id,bool drawfg_thing) {   //Block selector UI
     int x = 0, y = 0;
     //bg
     thisblock.h = 64+16;
@@ -84,7 +84,18 @@ void UI_Blocks::render(int center_block_id) {   //Block selector UI
     thisblock.y = -60;
     SDL_RenderTexture(sdl_renderer,textures->block_highlight_arrow,nullptr,&thisblock);
     
-
+    //Waow! now draw the FG/BG... (FG == true)
+    thisblock.x = -20;
+    thisblock.y = -20;
+    thisblock.h = 160;
+    thisblock.w = 160;
+    
+    if (drawfg_thing) {
+        SDL_RenderTexture(sdl_renderer,textures->FG,nullptr,&thisblock);
+    } else {
+        SDL_RenderTexture(sdl_renderer,textures->BG,nullptr,&thisblock);
+    }
+    
 }
 
 
@@ -125,7 +136,10 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
             tiler.x = x - finex;
             tiler.y = y - finey;
             
-
+            //looking at tile that doesnt exist
+            if (floor(coarsex+x / scale) < 0) continue;
+            if (floor(coarsey+y / scale) < 0) continue;
+            
             //Get the tile atlas cutout for this tile
             int atlasx,atlasy;
             int tileID = tiles->get(

@@ -73,7 +73,7 @@ void Phone_C::play_rainbet() {
     }
 
     //SDL_SetRenderScale(sdl_renderer, 4.0f, 4.0f);
-    SDL_SetRenderDrawColor(sdl_renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    
     std::stringstream ss;
     ss << "Bal: $" << blackjack->balance;
     std::string text = ss.str();
