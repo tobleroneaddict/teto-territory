@@ -98,7 +98,7 @@ class World_C {
 
         //Top UI bar
         UI_Blocks ui_block_selector; bool draw_on_foreground = false;
-
+        SDL_FRect highlight; //block highlighter
         TMX* tiles;
         SDL_FRect tiler; //Tile texturer
 
@@ -106,6 +106,7 @@ class World_C {
 
         Car teto_car; //Teto's car //A car (just one for now)
         void renderLayer(float player_x, float player_y,int layer, TMX* tiles);
+        void renderBlockHighlight(float player_x, float player_y, float mx, float my);
 };
 
 

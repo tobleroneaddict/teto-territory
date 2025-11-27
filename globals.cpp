@@ -158,3 +158,16 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
     }
 }
 
+void World_C::renderBlockHighlight(float player_x, float player_y, float mx, float my) {
+
+        
+        highlight.x = mx - highlight.w;
+        highlight.y = my - highlight.h;
+        float wx = mx + player_x;
+        float wy = my + player_y;
+        wx = floor(wx / 64.0f) * 64;
+        wy = floor(wy / 64.0f) * 64;
+        highlight.x = wx - player_x;
+        highlight.y = wy - player_y;
+        SDL_RenderTexture(sdl_renderer,textures->block_highlight,nullptr,&highlight);
+}

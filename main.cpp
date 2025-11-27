@@ -57,8 +57,7 @@ SDL_FRect food;
 SDL_FRect gun_rect;
 
 SDL_FRect ch_rect; //crosshair
-//and same for block highlight
-SDL_FRect highlight;
+
 
 SDL_FRect bullet_rect;
 
@@ -82,7 +81,7 @@ public:
     bool drunk = false;
     float drunk_timer = 0;
     bool driving = false;
-    bool alt = false;
+    bool alt = true;
 
     bool teto_rendering = true;
     SDL_Texture* teto_textureL;
@@ -156,7 +155,7 @@ void Teto_C::run_motion() { //also handles bullet cooldown
         
         //if not top, left edge
         bool left_edge_passed = ((x/* - WINDOW_WIDTH/2*/) + xv * deltaTime < 0);
-        bool top_edge_passed = ((y/* - WINDOW_HEIGHT/2*/)+ yv * deltaTime < 0);
+        bool top_edge_passed  = ((y/* - WINDOW_HEIGHT/2*/)+ yv * deltaTime < 0);
         
         //ONLY RESTRICT IF GOING UP/LEFT WARDS, scoop player back in. one way valve
         if (xv > 0) left_edge_passed = false;
@@ -291,8 +290,8 @@ int main() {
     
     ch_rect.h = textures->ch->h;
     ch_rect.w = textures->ch->w;
-    highlight.h = 64;
-    highlight.w = 64;
+    world.highlight.h = 64;
+    world.highlight.w = 64;
     
     
     bullet_rect.h = 32;
@@ -423,8 +422,8 @@ int main() {
                         // tx = floor(tx / 64);
                         // ty = floor(ty / 64);
                         //cout << tx << " | " << ty << "\n";
-                        highlight.x = mx - highlight.w;
-                        highlight.y = my - highlight.h;
+                        world.highlight.x = mx - world.highlight.w;
+                        world.highlight.y = my - world.highlight.h;
                         float wx = mx + teto.x;
                         float wy = my + teto.y;
                         wx = floor(wx / 64.0f)-10;
@@ -706,7 +705,7 @@ int main() {
 
         //STARTCAR
 
-        //If player isnt driving the car has to ZOOM
+        //If player isnt driving the car has to ZOOM, otherwise do car physics
         if (teto.driving) {
             world.teto_car.xv_own = teto.xv;
             world.teto_car.yv_own = teto.yv;
@@ -719,7 +718,6 @@ int main() {
             world.teto_car.x += world.teto_car.xv_own * deltaTime;
             world.teto_car.y += world.teto_car.yv_own * deltaTime;
         }
-
 
         //Render car (on top of player)
         if (teto.driving) { //If driving, strap in
@@ -925,11 +923,6 @@ int main() {
             //Loop thru each enemy
             for (int plush = 0; plush < (int)world.enemies.size(); plush++) {
                 curr = &world.enemies[plush];
-                //Check if this is the tgt
-                //Doesnt work yet deleted
-
-
-                
                 float dx = (r->x - curr->x);
                 float dy = (r->y - curr->y);
 
@@ -963,17 +956,7 @@ int main() {
         //WORLD RENDERING Tiling (FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)
         if (!world.hide_top) world.renderLayer(teto.x,teto.y,1,world.tiles);
 
-        //BLOCK HIGHLIGHTER
-        //Lock to tile, block highlighting.
-        highlight.x = mx - highlight.w;
-        highlight.y = my - highlight.h;
-        float wx = mx + teto.x;
-        float wy = my + teto.y;
-        wx = floor(wx / 64.0f) * 64;
-        wy = floor(wy / 64.0f) * 64;
-        highlight.x = wx - teto.x;
-        highlight.y = wy - teto.y;
-        SDL_RenderTexture(sdl_renderer,textures->block_highlight,nullptr,&highlight);
+        world.renderBlockHighlight(teto.x,teto.y,mx,my);
 
         //END BLOCK HL
 
