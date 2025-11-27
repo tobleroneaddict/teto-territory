@@ -1,26 +1,26 @@
-CXX = g++
+seeplusplus = g++
 
-CXXFLAGS = -O2 -Wall
+seeplusplusflags = -O2 -Wall
 
-LIBS = -lSDL3 -lSDL3_image -ltinyxml2
-
-
-
-SRCS = $(wildcard *.cpp)
-
-OBJS = $(SRCS:.cpp=.o)
+liberals = -lSDL3 -lSDL3_image -ltinyxml2
 
 
 
-main: $(OBJS)
+workscited = $(wildcard *.cpp)
 
-	$(CXX) $(OBJS) $(LIBS) -o main
+objectificationoflouis = $(workscited:.cpp=.o)
+
+
+
+main: $(objectificationoflouis)
+
+	$(seeplusplus) $(objectificationoflouis) $(liberals) -o main
 
 
 
 %.o: %.cpp
 
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(seeplusplus) $(seeplusplusflags) -c $< -o $@
 
 
 
