@@ -80,7 +80,7 @@ public:
     bool drunk = false;
     float drunk_timer = 0;
     bool driving = false;
-    bool alt = true;
+    bool alt = false;
 
     bool teto_rendering = true;
     SDL_Texture* teto_textureL;
@@ -152,11 +152,17 @@ void Teto_C::run_motion() { //also handles bullet cooldown
         xv *= drag;
         yv *= drag;
         
+        //if not top, left edge
+        bool left_edge_passed = ((x/* - WINDOW_WIDTH/2*/) + xv * deltaTime < 0);
+        bool top_edge_passed = ((y/* - WINDOW_HEIGHT/2*/)+ yv * deltaTime < 0);
         
+        //ONLY RESTRICT IF GOING UP/LEFT WARDS, scoop player back in. one way valve
+        if (xv > 0) left_edge_passed = false;
+        if (yv > 0) top_edge_passed = false;
 
         //Apply accel
-        x += xv * deltaTime;
-        y += yv * deltaTime;
+        if (!left_edge_passed) x += xv * deltaTime;
+        if (!top_edge_passed) y += yv * deltaTime;
 
         //bullet cooldown
         if (bullet_cooldown < 0) { bullet_cooldown = 0;} //if below zero, set to zero
@@ -253,8 +259,8 @@ int main() {
     teto.world = &world;
     
 
-    teto.x = 3200;
-    teto.y = 3200;
+    teto.x = 0;
+    teto.y = 0;
     
     world.teto_car.x = teto.x;
     world.teto_car.y = teto.y + 300;
@@ -304,7 +310,7 @@ int main() {
     SDL_HideCursor();
 
     //Randomly spawn beers
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 30; i++) {
         Item lilitem;               lilitem.texture = textures->capsule;
         lilitem.x = rand()  % MAX_WORLD_X;
         lilitem.y = rand()  % MAX_WORLD_Y;
@@ -493,7 +499,10 @@ int main() {
                 float nx = dx / 1300 * 2.25f;
                 newrocket.vy += (dy / WINDOW_HEIGHT) * 2;
                 newrocket.vx = nx * 1;
-
+                //Target (for explosion)
+                newrocket.tx = teto.x + mx;
+                newrocket.ty = teto.y + my;
+                //cout << newrocket.tx << endl;
                 world.rockets.emplace_back(newrocket);
             }
             //E action
@@ -529,34 +538,49 @@ int main() {
         tiler.h = scale;
         tiler.w = scale;
         SDL_FRect srcrect;
-        srcrect.h = scale;
-        srcrect.w = scale;
 
-        for (int y = -scale; y < WINDOW_HEIGHT+scale; y += scale) {
-                
-            for (int x = -scale; x < WINDOW_WIDTH+scale; x += scale ) {
-                
-                
-                //cout << atlasx << endl;
+        //TEXTURE BLEED FIX PART A
+        srcrect.h = scale - 1.0f;
+        srcrect.w = scale - 1.0f;
 
-                float offx = fmod(-teto.x, (float)scale);
-                if (offx < 0) offx += (float)scale;
-
-                float offy = fmod(-teto.y, (float)scale);
-                if (offy < 0) offy += (float)scale;
+        //cout << teto.x << endl;
+        for (int y = 0; y < WINDOW_HEIGHT+scale; y += scale) {
                 
-                tiler.x = offx + x;
-                tiler.y = offy + y;
+            for (int x = 0; x < WINDOW_WIDTH+scale; x += scale ) {
+                
+                
+                //Coarse scroll
+                float coarsex = floor(teto.x/scale) - 10;
+                float coarsey = floor(teto.y/scale) - 7;
+                
+                //Fine scroll
+                float finex = fmod(teto.x,scale);
+                float finey = fmod(teto.y,scale);
 
+                //helps fix weird jitter, but 0,0 still shows at player x -580 or so.
+                //actually 10 tiles up and left
+                //so lets try too..... move coarsex??
+                //seems to have worked.
+
+                if (finex < 0) finex+= scale;
+                if (finey < 0) finey+= scale;
+                
+                //write this tile's position on screen
+                tiler.x = x - finex;
+                tiler.y = y - finey;
+                
+
+                //Get the tile atlas cutout for this tile
                 int atlasx,atlasy;
-                cout << abs(floor(x / scale)) << endl;
                 int tileID = tiles.get(
-                    abs(floor(offx+x / scale)),
-                    abs(floor(offy+y / scale)),
+                    abs(floor(coarsex+x / scale)),
+                    abs(floor(coarsey+y / scale)),
                 0);
                 tiles.coordinate(tileID,atlasx,atlasy);
-                srcrect.x = atlasx;
-                srcrect.y = atlasy;
+                //Ro
+                //TEXTURE BLEED FIX PART B
+                srcrect.x = atlasx + 0.5f;
+                srcrect.y = atlasy + 0.5f;
                 
                 SDL_RenderTexture(sdl_renderer,textures->tile_atlas,&srcrect,&tiler);
 
@@ -577,8 +601,16 @@ int main() {
             curr->xv *= 0.9;
             curr->yv *= 0.9;
             //Apply accel
-            curr->x += curr->xv * deltaTime;
-            curr->y += curr->yv * deltaTime;
+            bool left_edge_passed = ((curr->x/* - WINDOW_WIDTH/2*/) + curr->xv * deltaTime < 0);
+            bool top_edge_passed = ((curr->y/* - WINDOW_HEIGHT/2*/)+ curr->yv * deltaTime < 0);
+            
+            //ONLY RESTRICT IF GOING UP/LEFT WARDS, scoop player back in. one way valve
+            if (curr->xv > 0) left_edge_passed = false;
+            if (curr->yv > 0) top_edge_passed = false;
+
+            //Apply accel
+            if (!left_edge_passed) curr->x += curr->xv * deltaTime;
+            if (!top_edge_passed) curr->y += curr->yv * deltaTime;
 
             if (curr->damage_cooldown < 0) { curr->damage_cooldown = 0;}
             else { curr->damage_cooldown -= deltaTime; }
@@ -638,7 +670,7 @@ int main() {
                 float dx = abs(teto.x - thing->x);    float dy = (teto.y - thing->y);
                 float distance = sqrtf(dx*dx+dy*dy);
                 if (distance < 50) { //Collides with pill
-                    phone.blackjack->balance -= 44; //Fee
+                    //phone.blackjack->balance -= 44; //Fee
                     teto.drunk_timer = 10000; 
                     world.dropped_items.erase(world.dropped_items.begin() + i); i--; 
                 }
@@ -876,7 +908,7 @@ int main() {
             //Velocity
             r->x += r->vx * deltaTime;
             r->y += r->vy * deltaTime;
-            r->life_timer -= deltaTime;
+            r->life_timer -= deltaTime; //advance life timer
             //Rotation
             r->rotation = atan2(r->vy,r->vx) * 57.29f + 90.0f;
 
@@ -889,14 +921,21 @@ int main() {
             SDL_RenderTextureRotated(sdl_renderer,textures->rocket,nullptr,&r->rect,r->rotation,NULL,SDL_FLIP_NONE);
             //Hit testing
             Enemy* curr;
-            
+
             //Loop thru each enemy
             for (int plush = 0; plush < (int)world.enemies.size(); plush++) {
                 curr = &world.enemies[plush];
+                //Check if this is the tgt
+                //Doesnt work yet deleted
+
+
+                
                 float dx = (r->x - curr->x);
                 float dy = (r->y - curr->y);
 
+                //General plush detection distance
                 float distance = sqrtf(dx*dx+dy*dy);
+                
 
                 if (distance < 0.0001f) continue;
                 
@@ -931,7 +970,7 @@ int main() {
         }
 
         //Encodes bet into rainbet before locking in
-        if (!blackjack->bet_locked_in) blackjack->bet = (int)teto.x % blackjack->balance;
+        if (!blackjack->bet_locked_in) blackjack->bet = abs((int)teto.x) % blackjack->balance;
 
         phone.update_phone();
 

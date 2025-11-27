@@ -44,6 +44,7 @@ public:
 class Rocket {
 public:
         float x, y, vx, vy, scale, rotation;
+        float tx,ty; //target x, target y. doesnt explode until near tgt
         float life_timer = 10000.0f; // 10 seconds
         SDL_FRect rect;
 };

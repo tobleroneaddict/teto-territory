@@ -55,7 +55,7 @@ int TMX::get(int x, int y,int layer) {
 
 //get atlas xy from id
 void TMX::coordinate(int tileID, int &x, int &y) {
-    int tx = (tileID % 10)-1; //tile x
+    int tx = tileID % 10; //tile x
     int ty = floor(tileID / 10);
     x = tx * map->tilewidth;
     y = ty * map->tileheight;
