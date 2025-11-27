@@ -75,6 +75,17 @@ public:
     int colour;
 };
 
+//UI block show container
+class UI_Blocks {
+public:
+    // at top of screen shows [] [] [] [] [] [] [[]] [] [] [] [] [] []
+    SDL_FRect thisblock;
+    TMX* tiles;
+    SDL_Texture* atlas;
+    void render(int center_block_id);
+};
+
+//Lotsa things
 class World_C {
     public:
         std::vector<Enemy> enemies;
@@ -83,10 +94,16 @@ class World_C {
         std::vector<Rocket> rockets;
         std::vector<Horse> horses;
         
+        int selected_block = 10;
+
+        //Top UI bar
+        UI_Blocks ui_block_selector;
+
+        TMX* tiles;
         SDL_FRect tiler; //Tile texturer
 
         bool hide_top = false; //hide top layer?
-        
+
         Car teto_car; //Teto's car //A car (just one for now)
         void renderLayer(float player_x, float player_y,int layer, TMX* tiles);
 };

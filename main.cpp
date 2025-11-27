@@ -55,7 +55,9 @@ SDL_FRect food;
 
 SDL_FRect gun_rect;
 
-SDL_FRect ch_rect;
+SDL_FRect ch_rect; //crosshair
+//and same for block highlight
+SDL_FRect highlight;
 
 SDL_FRect bullet_rect;
 
@@ -219,14 +221,14 @@ int main() {
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
     SDL_SetTextureScaleMode(sdl_texture,SDL_SCALEMODE_NEAREST);
     textures = new Game_Textures;
-    
-    //Load map
     TMX tiles;
+    world.tiles = &tiles;
+    //Load map
+    
     if (!tiles.load("Tiled/map.tmx")) return 1;
 
-    //ID is 48 ???
-    //Data has some crazy 28138232993 (typed, bleh not real) size, and its  [1] is segfault.
-    cout << tiles.get(1,1,0) << endl;
+    //Load tiles class into the block selecter UI
+    world.ui_block_selector.tiles = world.tiles;
 
     
 
@@ -284,6 +286,8 @@ int main() {
     
     ch_rect.h = textures->ch->h;
     ch_rect.w = textures->ch->w;
+    highlight.h = 64;
+    highlight.w = 64;
     
     
     bullet_rect.h = 32;
@@ -527,13 +531,22 @@ int main() {
             }
             //Show/hide top layer
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_T) {world.hide_top = !world.hide_top;}
+
+            //Scrolling block
+            if (e.type == SDL_EVENT_MOUSE_WHEEL) { 
+                if (e.wheel.y > 0 && world.selected_block > 1) {
+                    world.selected_block--;
+                } else if (e.wheel.y < 0  && world.selected_block < 99) {
+                    world.selected_block++;
+                }
+            }
         }
         
 
         SDL_RenderClear(sdl_renderer);
 
         //Tiling (BACK LAYER)
-        world.renderLayer(teto.x,teto.y,0,&tiles);
+        world.renderLayer(teto.x,teto.y,0,world.tiles);
 
 
         //End of tiling
@@ -907,11 +920,11 @@ int main() {
                 world.rockets.erase(world.rockets.begin() + i); i--;
             }
         }
-
+        
 
         
-        //Tiling (FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)
-        if (!world.hide_top) world.renderLayer(teto.x,teto.y,1,&tiles);
+        //WORLD RENDERING Tiling (FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)
+        if (!world.hide_top) world.renderLayer(teto.x,teto.y,1,world.tiles);
 
         //PHONE RENDERING
         SDL_RenderTexture(sdl_renderer,textures->phone,nullptr,&phone.phone_rect);
@@ -927,12 +940,25 @@ int main() {
 
         phone.update_phone();
 
-        
+        //RENDER BLOCK UI
+        world.ui_block_selector.render(world.selected_block);
+
+
         //crosshair
         ch_rect.x = mx - ch_rect.w + textures->ch->w/2;
         ch_rect.y = my - ch_rect.h + textures->ch->h/2;
         if (teto.bullet_cooldown < 10) SDL_RenderTexture(sdl_renderer,textures->ch,nullptr,&ch_rect);
 
+        //Lock to tile, block highlighting.
+        highlight.x = mx - highlight.w;
+        highlight.y = my - highlight.h;
+        float wx = mx + teto.x;
+        float wy = my + teto.y;
+        wx = floor(wx / 64.0f) * 64;
+        wy = floor(wy / 64.0f) * 64;
+        highlight.x = wx - teto.x;
+        highlight.y = wy - teto.y;
+        SDL_RenderTexture(sdl_renderer,textures->block_highlight,nullptr,&highlight);
 
         SDL_RenderPresent(sdl_renderer);
         

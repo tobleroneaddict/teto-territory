@@ -39,6 +39,56 @@ void Car::render(int xoff, int yoff) {
     }
 }
 
+//Render the block selector
+void UI_Blocks::render(int center_block_id) {   //Block selector UI
+    int x = 0, y = 0;
+    //bg
+    thisblock.h = 64+16;
+    thisblock.w = 630+16;
+    thisblock.x = WINDOW_WIDTH/2 - 315 - 12;
+    thisblock.y = 4;
+    SDL_RenderTexture(sdl_renderer,textures->sand_texture,nullptr,&thisblock);
+    
+    SDL_FRect srcrect;
+
+    //TEXTURE BLEED FIX PART A
+    srcrect.h = 64 - 1.0f;
+    srcrect.w = 64 - 1.0f;
+    thisblock.y = 12;
+    thisblock.h = 64;
+    thisblock.w = 64;
+
+    
+
+    //630 wide, 315 center local
+    int offx = WINDOW_WIDTH/2 - 315;
+
+
+    //9 wide
+    for (int i = 0; i < 9; i++) {
+        int this_id = center_block_id - 4 + i; //center is 4 higher than L - - - M - - - R
+        if (this_id < 0 || this_id > 100) continue; //OOB
+        tiles->coordinate(this_id,x,y); //get x,y of atlas from ID
+        //TEXTURE BLEED FIX PART B
+        srcrect.x = x + 0.5f;
+        srcrect.y = y + 0.5f;
+
+        thisblock.x = 70 * i + offx;
+
+        SDL_RenderTexture(sdl_renderer,textures->tile_atlas,&srcrect,&thisblock);
+    }
+    //Done, now draw arrow!
+    thisblock.h = textures->block_highlight_arrow->h/2;
+    thisblock.w = textures->block_highlight_arrow->w/2;
+    thisblock.x = WINDOW_WIDTH/2 - (thisblock.w /2);
+    thisblock.y = -60;
+    SDL_RenderTexture(sdl_renderer,textures->block_highlight_arrow,nullptr,&thisblock);
+    
+
+}
+
+
+//Render layer x of tiles (0 is background, 1 is foreground)
 void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
     int scale = 64;
     tiler.h = scale;
@@ -93,3 +143,4 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
         }
     }
 }
+
