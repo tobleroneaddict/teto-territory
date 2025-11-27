@@ -1,7 +1,7 @@
 {
   description = "video game shitpost with kasane teto";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-stable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
   outputs = {self,nixpkgs}: {
     packages = nixpkgs.lib.genAttrs ["x86_64-linux"] (system:
@@ -12,7 +12,7 @@
           version = "1.0";
           src = ./.;
           nativeBuildInputs = with pkgs; [ gcc ];
-          buildInputs = with pkgs; [sdl3 sdl3-image tinyxml2];
+          buildInputs = with pkgs; [sdl3 sdl3-image tinyxml-2];
           buildPhase = ''
             g++ -O2 -Wall -lSDL3 -lSDL3_image -ltinyxml2 *.cpp -o teto-territory
           '';
@@ -21,8 +21,8 @@
             cp teto-territory $out/bin/
           '';
           meta = with pkgs.lib; {
-            # description = "video game shitpost with kasane teto";
-            description = self.description;
+            description = "video game shitpost with kasane teto";
+            # description = self.description;
             license = licenses.gpl3;
             platforms = platforms.unix;
           };
