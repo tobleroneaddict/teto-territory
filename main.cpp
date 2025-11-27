@@ -232,8 +232,6 @@ int main() {
     world.ui_block_selector.tiles = world.tiles;
     world.selected_block = 13; //set default to brick
 
-    
-
     if (!gFrameBuffer || !sdl_window || !sdl_renderer || !sdl_texture) 
         return 1;
 
@@ -771,6 +769,7 @@ int main() {
         SDL_FRect horse_srcRect;
         horse_srcRect.h = 30;
         horse_srcRect.w = 29;
+        cout <<world.horses.size() << endl;
         for (int i = 0; i < (int)world.horses.size(); i++) {
             Horse* b = &world.horses[i];
             if (b == nullptr) { break;}
