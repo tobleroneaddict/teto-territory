@@ -53,8 +53,6 @@ uint32_t checker_big_line_color = 0xFFAA44AA;
 
 SDL_FRect food;
 
-SDL_FRect tiler; //Tile texturer
-
 SDL_FRect gun_rect;
 
 SDL_FRect ch_rect;
@@ -272,8 +270,8 @@ int main() {
 
     
 
-    tiler.h = 256;
-    tiler.w = 256;
+    world.tiler.h = 256;
+    world.tiler.w = 256;
 
     gun_rect.h = 80;
     gun_rect.w = 180;
@@ -300,7 +298,7 @@ int main() {
     //Spawn enemies
     for (int i = 0; i < 500; i++) {
         Enemy enemeeee;
-        enemeeee.rendering = true;
+        enemeeee.rendering = false;
         enemeeee.id = rand();
         enemeeee.x  = rand()  % MAX_WORLD_X;
         enemeeee.y  = rand()  % MAX_WORLD_Y;
@@ -527,68 +525,20 @@ int main() {
                 lehorse.y = teto.y;
                 world.horses.push_back(lehorse);
             }
-
+            //Show/hide top layer
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_T) {world.hide_top = !world.hide_top;}
         }
         
 
         SDL_RenderClear(sdl_renderer);
 
-        //Tiling
-        int scale = 64;
-        tiler.h = scale;
-        tiler.w = scale;
-        SDL_FRect srcrect;
+        //Tiling (BACK LAYER)
+        world.renderLayer(teto.x,teto.y,0,&tiles);
 
-        //TEXTURE BLEED FIX PART A
-        srcrect.h = scale - 1.0f;
-        srcrect.w = scale - 1.0f;
 
-        //cout << teto.x << endl;
-        for (int y = 0; y < WINDOW_HEIGHT+scale; y += scale) {
-                
-            for (int x = 0; x < WINDOW_WIDTH+scale; x += scale ) {
-                
-                
-                //Coarse scroll
-                float coarsex = floor(teto.x/scale) - 10;
-                float coarsey = floor(teto.y/scale) - 7;
-                
-                //Fine scroll
-                float finex = fmod(teto.x,scale);
-                float finey = fmod(teto.y,scale);
-
-                //helps fix weird jitter, but 0,0 still shows at player x -580 or so.
-                //actually 10 tiles up and left
-                //so lets try too..... move coarsex??
-                //seems to have worked.
-
-                if (finex < 0) finex+= scale;
-                if (finey < 0) finey+= scale;
-                
-                //write this tile's position on screen
-                tiler.x = x - finex;
-                tiler.y = y - finey;
-                
-
-                //Get the tile atlas cutout for this tile
-                int atlasx,atlasy;
-                int tileID = tiles.get(
-                    abs(floor(coarsex+x / scale)),
-                    abs(floor(coarsey+y / scale)),
-                0);
-                tiles.coordinate(tileID,atlasx,atlasy);
-                //Ro
-                //TEXTURE BLEED FIX PART B
-                srcrect.x = atlasx + 0.5f;
-                srcrect.y = atlasy + 0.5f;
-                
-                SDL_RenderTexture(sdl_renderer,textures->tile_atlas,&srcrect,&tiler);
-
-            }
-        }
         //End of tiling
         //Render play field
-        SDL_RenderTexture(sdl_renderer,sdl_texture,nullptr,nullptr);
+        //SDL_RenderTexture(sdl_renderer,sdl_texture,nullptr,nullptr);
 
 
         //Render enemies, run enemy code
@@ -959,6 +909,9 @@ int main() {
         }
 
 
+        
+        //Tiling (FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)
+        if (!world.hide_top) world.renderLayer(teto.x,teto.y,1,&tiles);
 
         //PHONE RENDERING
         SDL_RenderTexture(sdl_renderer,textures->phone,nullptr,&phone.phone_rect);

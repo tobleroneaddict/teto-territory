@@ -1,6 +1,10 @@
 #pragma once
-#include "globals.h"
+#include <vector>
 #include <tinyxml2.h>
+#include <math.h>
+#include <iostream>
+#include <sstream>
+#include <cstdint>
 
 //Got mad that two of my tmx parsers DIDNT WORK
 //even tinier tmx parser

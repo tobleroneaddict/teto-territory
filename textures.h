@@ -40,6 +40,7 @@ class Game_Textures {
         SDL_Texture* hitstand = nullptr;
         SDL_Texture* newgame = nullptr;
         SDL_Texture* playbutton = nullptr;
+        SDL_Texture* block_highlight = nullptr;
         
         
         SDL_Texture* rocket = nullptr;
@@ -77,7 +78,7 @@ class Game_Textures {
             hitstand = IMG_LoadTexture(renderer, "Assets/UI/hitstand.png");
             newgame = IMG_LoadTexture(renderer, "Assets/UI/newgame.png");
             playbutton = IMG_LoadTexture(renderer, "Assets/UI/playbutton.png");
-    
+            block_highlight = IMG_LoadTexture(renderer, "Assets/UI/highlight.png");
 
             return true;
         }

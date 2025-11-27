@@ -10,7 +10,7 @@
 #include "textures.h"
 #include <sstream>
 #include <cstdint>
-
+#include "tmxparse.h"
 
 extern int* gFrameBuffer;
 extern SDL_Window* sdl_window;
@@ -82,7 +82,13 @@ class World_C {
         std::vector<Item> dropped_items;
         std::vector<Rocket> rockets;
         std::vector<Horse> horses;
+        
+        SDL_FRect tiler; //Tile texturer
+
+        bool hide_top = false; //hide top layer?
+        
         Car teto_car; //Teto's car //A car (just one for now)
+        void renderLayer(float player_x, float player_y,int layer, TMX* tiles);
 };
 
 
