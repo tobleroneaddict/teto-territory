@@ -325,7 +325,7 @@ int main() {
 
     //Randomly spawn horses
 
-    for (int i = 0; i < 200; i++) {
+    for (int i = 0; i < 10; i++) {
         Horse lehorse;  lehorse.colour = rand() % 10;
         lehorse.vx = (rand() % 3)-1; lehorse.vy = (rand() % 3)-1;
         if (lehorse.vx == 0) lehorse.vx = 1;
@@ -550,7 +550,7 @@ int main() {
                 lehorse.vx = (rand() % 3)-1; lehorse.vy = (rand() % 3)-1;
                 if (lehorse.vx == 0) lehorse.vx = 1;
                 if (lehorse.vy == 0) lehorse.vy = 1;
-                cout << world.horses.size() << endl;
+                //cout << world.horses.size() << endl;
 
                 lehorse.x = teto.x;
                 lehorse.y = teto.y;
@@ -769,14 +769,18 @@ int main() {
         SDL_FRect horse_srcRect;
         horse_srcRect.h = 30;
         horse_srcRect.w = 29;
-        cout <<world.horses.size() << endl;
+
+        //cout <<world.horses.size() << endl;
         for (int i = 0; i < (int)world.horses.size(); i++) {
             Horse* b = &world.horses[i];
             if (b == nullptr) { break;}
             //Velocity
             b->x += b->vx;
             b->y += b->vy;
-            horse_srcRect.y = (33*i); //type
+            //float offy = b->colour;
+            //horse_srcRect.y = offy; //type
+            horse_srcRect.x = 0;
+            horse_srcRect.y = b->colour * 33;
             //Set to rect
             horse_rect.x = b->x - teto.x + WINDOW_WIDTH/2 -horse_rect.w/2;
             horse_rect.y = b->y - teto.y + WINDOW_HEIGHT/2 -horse_rect.h/2;

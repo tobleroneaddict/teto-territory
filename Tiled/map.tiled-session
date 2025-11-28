@@ -3,10 +3,23 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "map.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
+        "map.tmx": {
+            "scale": 0.125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 10244,
+                "y": 312
+            }
+        },
+        "tile-atlas.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 0.75
+        }
     },
     "last.imagePath": "/home/user/projects/cool-game/Assets",
     "map.height": 200,
@@ -15,9 +28,13 @@
     "map.tileWidth": 64,
     "map.width": 300,
     "openFiles": [
+        "map.tmx",
+        "tile-atlas.tsx"
     ],
     "project": "map.tiled-project",
     "recentFiles": [
+        "tile-atlas.tsx",
+        "map.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
