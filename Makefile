@@ -2,6 +2,7 @@ CXX = g++
 CXXFLAGS = -O2 -Wall
 LIBS = -lSDL3 -lSDL3_image -ltinyxml2
 HDRS = -I include
+SRC = ./src
 SRCS = $(wildcard $(SRC)/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
 OUT = bin/
