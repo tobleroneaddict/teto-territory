@@ -1,27 +1,23 @@
 CXX = g++
-
 CXXFLAGS = -O2 -Wall
-
 LIBS = -lSDL3 -lSDL3_image -ltinyxml2
-
-
-
-SRCS = $(wildcard *.cpp)
-
+# HDRS = $(wildcard -I ./include/*.h)
+HDRS = -I include
+SRC = ./src
+SRCS = $(wildcard $(SRC)/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
+OUT = bin/
+all: build
 
-
-
-main: $(OBJS)
-
-	$(CXX) $(OBJS) $(LIBS) -o main
-
-
+build: $(OBJS)
+	@mkdir -p $(OUT)
+	$(CXX) $(HDRS) $(LIBS) $(OBJS) -o $(OUT)/teto-territory
+	# rm -f *.o
 
 %.o: %.cpp
-
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-
-
+	$(CXX) $(CXXFLAGS) $(HDRS) -c $< -o $@
+run: build
+	$(OUT)/teto-territory
 clean:
+	@rm -rf $(OUT)
+	@rm -rf $(OBJS)

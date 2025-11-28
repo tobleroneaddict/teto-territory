@@ -19,9 +19,9 @@ public:
 class bj_player {
 public:
     std::vector<bj_card> cards;
-    
+
     bool dealer = false;
-    
+
     void hit();
     void stand();
     void bet(int amount);
@@ -43,18 +43,18 @@ public:
     bj_player dealer;
     bj_player player;
 
-    
+
     void init();
 
     bj_card random_card(bool facing_up);
 
     void initial_deal();
-    
+
     void hit();
     void stand();
     void start_game();
     //ONCE DEALER HAS GONE AROUND TABLE: FLIP UP FD CARD
     //16 or under, have to take another card
     //17 or higher stay with hand
-    
+
 };
