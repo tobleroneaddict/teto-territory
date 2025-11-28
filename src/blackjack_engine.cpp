@@ -2,10 +2,10 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include "include/SDL_image.h"
+#include "../include/SDL_image.h"
 #include "vector"
 
-#include "blackjack_engine.h"
+#include "../include/blackjack_engine.h"
 
 void bj_player::hit() {
 
@@ -17,13 +17,13 @@ void bj_player::stand() {
 int bj_player::calculate() {
     int accumulator = 0; //hehe is cpu
     int num_aces = 0; //theres how many aces in this room?
-    
+
     for (int i =0; i < (int)cards.size(); i++) {
         bj_card* card = &cards[i];
 
         accumulator += card->value;
 
-        if (card->value == bj_card::ACE) num_aces++;       
+        if (card->value == bj_card::ACE) num_aces++;
     }
 
     //Pop out aces until possible bust
@@ -31,14 +31,14 @@ int bj_player::calculate() {
         accumulator += 10;
         num_aces--;
     }
-    
+
     return accumulator;
 }
 
 
 void blackjack_engine::init() {
     std::cout << "bj_engine_start\n";
-    
+
 }
 
 bj_card blackjack_engine::random_card(bool facing_up) {
@@ -64,7 +64,7 @@ void blackjack_engine::initial_deal() {
     dealer.cards.clear();
     player.cards.clear();
     won = tie = bust = dealer_won = false;
-    
+
     //std::cout << bet << std::endl;
     balance -= bet;
     bet_locked_in = true;
@@ -72,10 +72,10 @@ void blackjack_engine::initial_deal() {
 
     dealer.cards.emplace_back(random_card(true));
     dealer.cards.emplace_back(random_card(false));
-    
+
     player.cards.emplace_back(random_card(true));
     player.cards.emplace_back(random_card(true));
-    
+
 }
 
 void blackjack_engine::hit() {
@@ -130,7 +130,7 @@ void blackjack_engine::stand() {
     } else if (dealer_won) {
                     //bet_locked_in = false;
     }
-    
+
 
 }
 

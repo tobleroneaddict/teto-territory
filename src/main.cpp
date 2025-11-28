@@ -2,14 +2,14 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include "include/SDL_image.h"
+#include "../include/SDL_image.h"
 #include "vector"
 
 #include <SDL3/SDL_time.h>
 #include <sstream>
 #include <cstdint>
 //Game Mechanics
-#include "globals.h"
+#include "../include/globals.h"
 #include "blackjack_engine.h"
 #include "phone.h"
 
@@ -32,7 +32,7 @@ using namespace std;
 
 
 
-//Max bullets before start popping them from a list 
+//Max bullets before start popping them from a list
 const int MAX_BULLETS_ALLOWED = 15;
 float TIME_BETWEEN_GUNSHOTS = 100; //10 rps
 
@@ -73,10 +73,10 @@ public:
 
     int ammo;
     float bullet_cooldown;
-    
+
     //Inventory
     bool holding_weapon = false;
-    
+
     World_C *world;
     bool drunk = false;
     float drunk_timer = 0;
@@ -93,7 +93,7 @@ public:
 
 void Teto_C::run_motion() { //also handles bullet cooldown
     //Run bio
-    if (drunk_timer < 10) { 
+    if (drunk_timer < 10) {
         drunk_timer = 0; drunk = false;
         player_rect.h = 200;
         player_rect.w = 80;
@@ -112,11 +112,11 @@ void Teto_C::run_motion() { //also handles bullet cooldown
         if (driving) max_speed_f = CAR_SPEED;
 
         //Input vectors
-        float inx = 0, iny = 0; float input_scale = 0.01; 
+        float inx = 0, iny = 0; float input_scale = 0.01;
         iny -= (keys[SDL_SCANCODE_W])    * input_scale  * deltaTime;
         iny -= -(keys[SDL_SCANCODE_S])   * input_scale  * deltaTime;
         inx += -(keys[SDL_SCANCODE_A])   * input_scale  * deltaTime;
-        inx += (keys[SDL_SCANCODE_D])    * input_scale  * deltaTime;        
+        inx += (keys[SDL_SCANCODE_D])    * input_scale  * deltaTime;
 
         //DUI handling
         if (drunk && driving) {
@@ -138,9 +138,9 @@ void Teto_C::run_motion() { //also handles bullet cooldown
             //Normalize n clamp
             float nx = xv / velocity;
             float ny = yv / velocity;
-            
+
             xv = max_speed_f * nx;
-            yv = max_speed_f * ny;            
+            yv = max_speed_f * ny;
 
         }
 
@@ -152,11 +152,11 @@ void Teto_C::run_motion() { //also handles bullet cooldown
         if (driving) {drag = (world->teto_car.brakes) ? 0.75f: drag;} //HIT DA BRAKES!! DURING Spacebar
         xv *= drag;
         yv *= drag;
-        
+
         //if not top, left edge
         bool left_edge_passed = ((x/* - WINDOW_WIDTH/2*/) + xv * deltaTime < 0);
         bool top_edge_passed  = ((y/* - WINDOW_HEIGHT/2*/)+ yv * deltaTime < 0);
-        
+
         //ONLY RESTRICT IF GOING UP/LEFT WARDS, scoop player back in. one way valve
         if (xv > 0) left_edge_passed = false;
         if (yv > 0) top_edge_passed = false;
@@ -195,10 +195,10 @@ void Teto_C::fire_weapon() {
         ebullet.y -= 35; ofy = -35;
     }
     //Depending on the direction player is facing we have to account for where the muzzle(?) of the gun is, to get proper aiming.
-    
+
     float dx = mx - (WINDOW_WIDTH/2) - ofx;
     float dy = my - (WINDOW_HEIGHT/2) - ofy;
-    
+
     float ebullet_mouse_dist_to_norm = sqrt(dx*dx+dy*dy);
 
     float nx = dx / ebullet_mouse_dist_to_norm;
@@ -206,8 +206,8 @@ void Teto_C::fire_weapon() {
                             //Tack on player v
     ebullet.vx = (nx * 10) +xv;
     ebullet.vy = (ny * 10) +yv;
-    
-    
+
+
 
     //Create bullet
     world->bullets.push_back(ebullet);
@@ -225,14 +225,14 @@ int main() {
     TMX tiles;
     world.tiles = &tiles;
     //Load map
-    
+
     if (!tiles.load("Tiled/map.tmx")) return 1;
 
     //Load tiles class into the block selecter UI
     world.ui_block_selector.tiles = world.tiles;
     world.selected_block = 13; //set default to brick
 
-    if (!gFrameBuffer || !sdl_window || !sdl_renderer || !sdl_texture) 
+    if (!gFrameBuffer || !sdl_window || !sdl_renderer || !sdl_texture)
         return 1;
 
 
@@ -241,7 +241,7 @@ int main() {
 
     //cout << reinterpret_cast<unsigned int>(&sdl_window) << endl;
     //Contains all the textures (call after the sdl; init stuff)
-    
+
     textures->load(sdl_renderer);
     SDL_Delay(100); //help stuff not die
     Phone_C phone; phone.phone_rect.y = WINDOW_HEIGHT - 100;
@@ -257,11 +257,11 @@ int main() {
 
     Teto_C teto;
     teto.world = &world;
-    
+
 
     teto.x = 20*64;
     teto.y = 23*64;
-    
+
     world.teto_car.x = teto.x;
     world.teto_car.y = teto.y + 300;
 
@@ -272,7 +272,7 @@ int main() {
 
     vingette_rect.x = 0;
     vingette_rect.y = 0;
-    
+
 
     world.tiler.h = 256;
     world.tiler.w = 256;
@@ -284,14 +284,14 @@ int main() {
 
     world.teto_car.rect.w = 600;
     world.teto_car.rect.h = 300;
-    
-    
+
+
     ch_rect.h = textures->ch->h;
     ch_rect.w = textures->ch->w;
     world.highlight.h = 64;
     world.highlight.w = 64;
-    
-    
+
+
     bullet_rect.h = 32;
     bullet_rect.w = 32;
     horse_rect.h = 29*2;
@@ -310,7 +310,7 @@ int main() {
         world.enemies.push_back(enemeeee);
     }
 
-    
+
     SDL_HideCursor();
 
     //Randomly spawn beers
@@ -322,7 +322,7 @@ int main() {
         lilitem.id = 9;
         world.dropped_items.push_back(lilitem);
     }
-    
+
     //Randomly spawn horses
 
     for (int i = 0; i < 200; i++) {
@@ -340,8 +340,8 @@ int main() {
     {
         //dTs
         LAST = NOW;NOW = SDL_GetPerformanceCounter(); deltaTime = (double)((NOW - LAST)*1000 / (double)SDL_GetPerformanceFrequency() );
-        
-        
+
+
         SDL_GetWindowSizeInPixels(sdl_window,&WINDOW_WIDTH,&WINDOW_HEIGHT);
 
         teto.player_rect.x = (WINDOW_WIDTH/2)-40;
@@ -349,16 +349,16 @@ int main() {
 
         gun_rect.x = teto.player_rect.x - 100;
         gun_rect.y = teto.player_rect.y + 30;
-        
-        
+
+
         SDL_GetMouseState(&mx,&my);
 
         SDL_SetRenderDrawColor(sdl_renderer, 0, 150, 150, SDL_ALPHA_OPAQUE);
-        
 
-        //Run teto user motion 
+
+        //Run teto user motion
         teto.run_motion();
-        
+
 
         //Oneshot key events
         SDL_Event e;
@@ -382,7 +382,7 @@ int main() {
                 //Phone open/close
                 if (mx < WINDOW_WIDTH - 67 && mx > WINDOW_WIDTH - 400 && my > phone.phone_rect.y && my < phone.phone_rect.y + 115) {
                     phone.active = !phone.active;
-                    
+
                 } //END phone toggle
                 //Phone screenactions
                 else if (mx < WINDOW_WIDTH - 67 && mx > WINDOW_WIDTH - 400 && my > phone.phone_rect.y + 115)  {
@@ -410,7 +410,7 @@ int main() {
                 } //END phone screen actions
                 else {
                     //ELSEWHERE (Not phone)
-                    //Gun    
+                    //Gun
                     if (teto.bullet_cooldown < 10 && teto.holding_weapon) teto.fire_weapon();
                     if (!teto.holding_weapon) {
                         //Block place
@@ -436,9 +436,9 @@ int main() {
 
                 }
 
-                
 
-                
+
+
 
             }
             //MOUSE DONE NOW KEYS
@@ -520,7 +520,7 @@ int main() {
             }
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_K) { teto.alt = !teto.alt;}
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_G) { teto.holding_weapon = !teto.holding_weapon; }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_F) { 
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_F) {
                 Rocket newrocket; newrocket.x = teto.x; newrocket.y = teto.y + 80;
                 newrocket.scale = 1; newrocket.vy -= 3.0f;
                 float dx = mx - (WINDOW_WIDTH/2);
@@ -535,7 +535,7 @@ int main() {
                 world.rockets.emplace_back(newrocket);
             }
             //E action
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_E) { 
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_E) {
                 float cardist = get_distance(teto.x,teto.y,world.teto_car.x,world.teto_car.y);
                 if (cardist < 100){ //Get in car
                 teto.driving = !teto.driving; teto.x = world.teto_car.x;teto.y = world.teto_car.y;           }
@@ -565,7 +565,7 @@ int main() {
 
 
             //Scrolling block
-            if (e.type == SDL_EVENT_MOUSE_WHEEL) { 
+            if (e.type == SDL_EVENT_MOUSE_WHEEL) {
                 if (e.wheel.y > 0 && world.selected_block > 1) {
                     world.selected_block--;
                 } else if (e.wheel.y < 0  && world.selected_block < 99) {
@@ -573,7 +573,7 @@ int main() {
                 }
             }
         }
-        
+
 
         SDL_RenderClear(sdl_renderer);
 
@@ -598,7 +598,7 @@ int main() {
             //Apply accel
             bool left_edge_passed = ((curr->x/* - WINDOW_WIDTH/2*/) + curr->xv * deltaTime < 0);
             bool top_edge_passed = ((curr->y/* - WINDOW_HEIGHT/2*/)+ curr->yv * deltaTime < 0);
-            
+
             //ONLY RESTRICT IF GOING UP/LEFT WARDS, scoop player back in. one way valve
             if (curr->xv > 0) left_edge_passed = false;
             if (curr->yv > 0) top_edge_passed = false;
@@ -612,7 +612,7 @@ int main() {
 
             //Making this a pointer let this actually decrease!
             //curr->damage_cooldown = curr->damage_cooldown - deltaTime;
-            
+
 
             float dx = abs(teto.x - curr->x);
             float dy = (teto.y - curr->y);
@@ -624,7 +624,7 @@ int main() {
 
             food.x = curr->x - teto.x + WINDOW_WIDTH/2 - food.w/2;
             food.y = curr->y - teto.y + WINDOW_HEIGHT/2 - food.h/2;
-            
+
 
             if (teto.holding_weapon && scare_factor < 300) {
                 food.x += randX * (300-scare_factor) * .06;
@@ -644,7 +644,7 @@ int main() {
             }
         }
 
-        
+
         SDL_FRect thingrect;
 
         //Render items
@@ -657,7 +657,7 @@ int main() {
             thingrect.h = thing->texture->h * thing->scale;
             thingrect.w = thing->texture->w * thing->scale;
 
-            
+
 
             //Drunk
             if (thing->id == 9) {
@@ -666,8 +666,8 @@ int main() {
                 float distance = sqrtf(dx*dx+dy*dy);
                 if (distance < 50) { //Collides with pill
                     //phone.blackjack->balance -= 44; //Fee
-                    teto.drunk_timer = 10000; 
-                    world.dropped_items.erase(world.dropped_items.begin() + i); i--; 
+                    teto.drunk_timer = 10000;
+                    world.dropped_items.erase(world.dropped_items.begin() + i); i--;
                 }
             }
 
@@ -675,15 +675,15 @@ int main() {
             SDL_RenderTexture(sdl_renderer,thing->texture,nullptr,&thingrect);
 
         }
-        
+
 
         //Render player (on top)
         if (teto.teto_rendering) {
             //if (!teto.drunk) {
                 if (teto.xv >= 0) {
-                    if (teto.alt) { 
+                    if (teto.alt) {
                         SDL_RenderTextureRotated(sdl_renderer,textures->teto_texture_alt,nullptr,&teto.player_rect,0,nullptr,SDL_FLIP_NONE);
-                    } else { 
+                    } else {
                         SDL_RenderTextureRotated(sdl_renderer,textures->teto_texture_r,nullptr,&teto.player_rect,0,nullptr,SDL_FLIP_NONE);
                     }
                     //SDL_RenderTexture(sdl_renderer,textures->teto_texture_r,nullptr,&teto.player_rect);
@@ -693,7 +693,7 @@ int main() {
                     } else {
                         SDL_RenderTextureRotated(sdl_renderer,textures->teto_texture_r,nullptr,&teto.player_rect,0,nullptr,SDL_FLIP_HORIZONTAL);
                     }
-                    
+
                     //SDL_RenderTexture(sdl_renderer,textures->teto_texture_l,nullptr,&teto.player_rect);
                 }
             //} else {
@@ -720,11 +720,11 @@ int main() {
         //Render car (on top of player)
         if (teto.driving) { //If driving, strap in
             world.teto_car.x = teto.x;
-            world.teto_car.y = teto.y;   
+            world.teto_car.y = teto.y;
             world.teto_car.flip = teto.xv < 0;
-        } 
+        }
         //Now do car physics (regardless of driving)
-        // Respawn 
+        // Respawn
         if (world.teto_car.x < 0 || world.teto_car.y < 0 || world.teto_car.x > tiles.map->width*64 || world.teto_car.y > tiles.map->height*64) {world.teto_car.x = 600;world.teto_car.y = 600; world.teto_car.xv_own = 0; world.teto_car.yv_own = 0;}
         Enemy* curr;
         float total_car_v = sqrt((world.teto_car.xv_own * world.teto_car.xv_own) + (world.teto_car.yv_own * world.teto_car.yv_own));
@@ -755,9 +755,9 @@ int main() {
                 world.teto_car.yv_own += total_car_v * ny / 2;
                 teto.xv += total_car_v * nx;
                 teto.yv += total_car_v * ny;
-                
+
                 curr->damage_cooldown = 1000; //RESET COOLDOWN
-            } 
+            }
         }
 
         world.teto_car.render(teto.x,teto.y);
@@ -812,15 +812,15 @@ int main() {
                     }
 
                     //curr->damage_cooldown = 1000; //RESET COOLDOWN
-                } 
+                }
             }
-            
+
         }
 
 
 
         //END HORSE
-        
+
         //RENDER UNREGISTERED FIREARM
         if (mx > WINDOW_WIDTH/2) {
             gun_rect.w = -180;
@@ -836,13 +836,13 @@ int main() {
         { //scope
             float dx = mx - (WINDOW_WIDTH/2);
             float dy = my - (WINDOW_HEIGHT/2);
-            
+
             float ebullet_mouse_dist_to_norm = sqrt(dx*dx+dy*dy);
-        
+
             float nx = dx / ebullet_mouse_dist_to_norm;
-            float ny = dy / ebullet_mouse_dist_to_norm; 
+            float ny = dy / ebullet_mouse_dist_to_norm;
             float isonright = (mx > (WINDOW_WIDTH/2)) ? 195.0f : 0.0f;
-            
+
             if (teto.holding_weapon && !teto.drunk)    SDL_RenderTextureRotated(sdl_renderer,textures->gun_texture,nullptr,&gun_rect,((atan2(ny,nx)+90.0f)*57.9f)+isonright,nullptr,SDL_FLIP_NONE); //The gun rect is just flipped
             //if (teto.holding_weapon && !teto.drunk) SDL_RenderTexture(sdl_renderer,textures->gun_texture,nullptr,&gun_rect);
         }
@@ -876,13 +876,13 @@ int main() {
                     //normalize...
                     float nx = dx / distance;
                     float ny = dy / distance;
-                    
+
                     curr->xv -= nx * 3;
                     curr->yv -= ny * 3;
                     curr->damage_cooldown = 1000; //RESET COOLDOWN
                     //erase kept segfaulting
                     b->x = 999999;
-                } 
+                }
             }
             //Bullet life
             if (b->life_timer <= 0) {
@@ -897,7 +897,7 @@ int main() {
         for (int i = 0; i < (int)world.rockets.size(); i++) {
             Rocket* r = &world.rockets[i];
             if (r == nullptr) { break;}
-            
+
             r->rect.h = 100 * r->scale;
             r->rect.w = 100 * r->scale;
             //Gravity
@@ -927,31 +927,31 @@ int main() {
 
                 //General plush detection distance
                 float distance = sqrtf(dx*dx+dy*dy);
-                
+
 
                 if (distance < 0.0001f) continue;
-                
+
                 if (distance < 30) {
 
                     //normalize...
                     float nx = dx / distance;
                     float ny = dy / distance;
-                    
+
                     curr->xv -= nx * 3;
                     curr->yv -= ny * 3;
                     curr->damage_cooldown = 1000; //RESET COOLDOWN
                     //erase kept segfaulting
                     r->x = 999999;
-                } 
+                }
             }
             //Bullet life
             if (r->life_timer <= 0) {
                 world.rockets.erase(world.rockets.begin() + i); i--;
             }
         }
-        
 
-        
+
+
         //WORLD RENDERING Tiling (FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)(FRONT LAYER)
         if (!world.hide_top) world.renderLayer(teto.x,teto.y,1,world.tiles);
 
@@ -965,7 +965,7 @@ int main() {
         //Blackjack ,this will probably have a bug where it shows the bj during the animation
         if (phone.active) {
             phone.play_rainbet();
-            
+
         }
 
         //Encodes bet into rainbet before locking in
@@ -982,22 +982,22 @@ int main() {
         ch_rect.y = my - ch_rect.h + textures->ch->h/2;
         if (teto.bullet_cooldown < 10) SDL_RenderTexture(sdl_renderer,textures->ch,nullptr,&ch_rect);
 
-        
+
         //Vingette if drunk
         if (teto.drunk) {
             vingette_rect.h = WINDOW_HEIGHT;
             vingette_rect.w = WINDOW_WIDTH;
-            
+
             SDL_RenderTexture(sdl_renderer,textures->vingette,nullptr,&vingette_rect);
         }
         SDL_RenderPresent(sdl_renderer);
-        
 
-        
-        
+
+
+
         SDL_Delay(4); //dont remove this its black magic
     }
-    
+
 
     return 0;
 }

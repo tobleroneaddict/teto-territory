@@ -4,7 +4,7 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include "include/SDL_image.h"
+#include "../include/SDL_image.h"
 #include "vector"
 #include <SDL3/SDL_time.h>
 #include "textures.h"
@@ -34,7 +34,7 @@ public:
     float health = 100;
     float damage_cooldown = 1000; //milliseconds
 };
-    
+
 class Bullet {
 public:
     float x, y, vx, vy;
@@ -58,7 +58,7 @@ public:
     SDL_FRect rect;
     void render(int xoff, int yoff);
 };
-    
+
 //Dropped item
 class Item {
 public:
@@ -67,11 +67,11 @@ public:
     float x, y, vx, vy, scale;
 };
 
-//Horse racing 
+//Horse racing
 class Horse {
 public:
     float x,y, vx, vy; //vx vy are -1,1
-    
+
     int colour;
 };
 
@@ -93,7 +93,7 @@ class World_C {
         std::vector<Item> dropped_items;
         std::vector<Rocket> rockets;
         std::vector<Horse> horses;
-        
+
         int selected_block = 0;
 
         //Top UI bar
@@ -108,5 +108,3 @@ class World_C {
         void renderLayer(float player_x, float player_y,int layer, TMX* tiles);
         void renderBlockHighlight(float player_x, float player_y, float mx, float my);
 };
-
-

@@ -9,7 +9,7 @@
 //Got mad that two of my tmx parsers DIDNT WORK
 //even tinier tmx parser
 
-struct TMX_TILE { 
+struct TMX_TILE {
     int id;
 }; //we only need an ID
 
@@ -30,7 +30,7 @@ class TMX {
 public:
     TMX_MAP* map;
     bool load(const std::string &filename);
-    
+
     //get id at x,y, layer ID
     int get(int x, int y, int layer = 1);
     void setblock(int x, int y, int layer, int id);

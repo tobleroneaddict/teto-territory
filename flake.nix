@@ -14,7 +14,7 @@
           nativeBuildInputs = with pkgs; [ gcc ];
           buildInputs = with pkgs; [sdl3 sdl3-image tinyxml-2];
           buildPhase = ''
-            g++ -O2 -Wall -lSDL3 -lSDL3_image -ltinyxml2 *.cpp -o teto-territory
+            g++ -O2 -Wall -lSDL3 -lSDL3_image -ltinyxml2 src/*.cpp -I include/ -o teto-territory
           '';
           installPhase = ''
             mkdir -p $out/bin

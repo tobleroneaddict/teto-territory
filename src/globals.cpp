@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "../include/globals.h"
 
 
 float RUN_SPEED = 0.5f;
@@ -29,7 +29,7 @@ float get_distance(float x1, float y1, float x2, float y2) {
 void Car::render(int xoff, int yoff) {
     rect.x = x - xoff + WINDOW_WIDTH/2 - rect.w/2 ;
     rect.y = y - yoff + WINDOW_HEIGHT/2 - rect.h/2 ;
-    
+
     //rect.x = x - xoff + rect.w/2 + 100; //draw in center
     //rect.y = y - yoff + rect.h/2 + 150;
     if (flip) {
@@ -48,7 +48,7 @@ void UI_Blocks::render_UI_Block(int center_block_id,bool drawfg_thing) {   //Blo
     thisblock.x = WINDOW_WIDTH/2 - 315 - 12;
     thisblock.y = 4;
     SDL_RenderTexture(sdl_renderer,textures->sand_texture,nullptr,&thisblock);
-    
+
     SDL_FRect srcrect;
 
     //TEXTURE BLEED FIX PART A
@@ -58,7 +58,7 @@ void UI_Blocks::render_UI_Block(int center_block_id,bool drawfg_thing) {   //Blo
     thisblock.h = 64;
     thisblock.w = 64;
 
-    
+
 
     //630 wide, 315 center local
     int offx = WINDOW_WIDTH/2 - 315;
@@ -83,19 +83,19 @@ void UI_Blocks::render_UI_Block(int center_block_id,bool drawfg_thing) {   //Blo
     thisblock.x = WINDOW_WIDTH/2 - (thisblock.w /2);
     thisblock.y = -60;
     SDL_RenderTexture(sdl_renderer,textures->block_highlight_arrow,nullptr,&thisblock);
-    
+
     //Waow! now draw the FG/BG... (FG == true)
     thisblock.x = -20;
     thisblock.y = -20;
     thisblock.h = 160;
     thisblock.w = 160;
-    
+
     if (drawfg_thing) {
         SDL_RenderTexture(sdl_renderer,textures->FG,nullptr,&thisblock);
     } else {
         SDL_RenderTexture(sdl_renderer,textures->BG,nullptr,&thisblock);
     }
-    
+
 }
 
 
@@ -112,14 +112,14 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
 
     //cout << teto.x << endl;
     for (int y = 0; y < WINDOW_HEIGHT+scale; y += scale) {
-            
+
         for (int x = 0; x < WINDOW_WIDTH+scale; x += scale ) {
-            
-            
+
+
             //Coarse scroll
             float coarsex = floor(player_x/scale) - 10;
             float coarsey = floor(player_y/scale) - 7;
-            
+
             //Fine scroll
             float finex = fmod(player_x,scale);
             float finey = fmod(player_y,scale);
@@ -131,15 +131,15 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
 
             if (finex < 0) finex+= scale;
             if (finey < 0) finey+= scale;
-            
+
             //write this tile's position on screen
             tiler.x = x - finex;
             tiler.y = y - finey;
-            
+
             //looking at tile that doesnt exist
             if (floor(coarsex+x / scale) < 0) continue;
             if (floor(coarsey+y / scale) < 0) continue;
-            
+
             //Get the tile atlas cutout for this tile
             int atlasx,atlasy;
             int tileID = tiles->get(
@@ -151,7 +151,7 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
             //TEXTURE BLEED FIX PART B
             srcrect.x = atlasx + 0.5f;
             srcrect.y = atlasy + 0.5f;
-            
+
             SDL_RenderTexture(sdl_renderer,textures->tile_atlas,&srcrect,&tiler);
 
         }
@@ -160,7 +160,7 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
 
 void World_C::renderBlockHighlight(float player_x, float player_y, float mx, float my) {
 
-        
+
         highlight.x = mx - highlight.w;
         highlight.y = my - highlight.h;
         float wx = mx + player_x;
