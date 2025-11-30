@@ -98,7 +98,7 @@ void UI_Blocks::render_UI_Block(int center_block_id,bool drawfg_thing) {   //Blo
 
 }
 
-
+//2D MC style rendering
 //Render layer x of tiles (0 is background, 1 is foreground)
 void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
     int scale = 64;
@@ -110,6 +110,12 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
     srcrect.h = scale - 1.0f;
     srcrect.w = scale - 1.0f;
 
+    //anchor screen to 0.5,0.5 and not 0 0
+
+
+    float screen_anchor_x = player_x - WINDOW_WIDTH  / 2;
+    float screen_anchor_y = player_y - WINDOW_HEIGHT / 2;
+    
     //cout << teto.x << endl;
     for (int y = 0; y < WINDOW_HEIGHT+scale; y += scale) {
 
@@ -117,12 +123,12 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
 
 
             //Coarse scroll
-            float coarsex = floor(player_x/scale) - 10;
-            float coarsey = floor(player_y/scale) - 7;
+            float coarsex = floor(screen_anchor_x/scale) - 10;
+            float coarsey = floor(screen_anchor_y/scale) - 7;
 
             //Fine scroll
-            float finex = fmod(player_x,scale);
-            float finey = fmod(player_y,scale);
+            float finex = fmod(screen_anchor_x,scale);
+            float finey = fmod(screen_anchor_y,scale);
 
             //helps fix weird jitter, but 0,0 still shows at player x -580 or so.
             //actually 10 tiles up and left

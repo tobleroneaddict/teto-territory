@@ -81,7 +81,7 @@ public:
     bool drunk = false;
     float drunk_timer = 0;
     bool driving = false;
-    bool alt = false;
+    bool alt = true;
 
     bool teto_rendering = true;
     SDL_Texture* teto_textureL;
