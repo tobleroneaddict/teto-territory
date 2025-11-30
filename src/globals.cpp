@@ -123,8 +123,8 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
 
 
             //Coarse scroll
-            float coarsex = floor(screen_anchor_x/scale) - 10;
-            float coarsey = floor(screen_anchor_y/scale) - 7;
+            float coarsex = floor(screen_anchor_x/scale);
+            float coarsey = floor(screen_anchor_y/scale);
 
             //Fine scroll
             float finex = fmod(screen_anchor_x,scale);

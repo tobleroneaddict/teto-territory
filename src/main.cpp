@@ -414,20 +414,15 @@ int main() {
                     if (teto.bullet_cooldown < 10 && teto.holding_weapon) teto.fire_weapon();
                     if (!teto.holding_weapon) {
                         //Block place
-                        //mouse to world space
-                        // int tx = teto.x + (mx - WINDOW_WIDTH/2);
-                        // int ty = teto.y + (my - WINDOW_HEIGHT/2);
-                        // tx = floor(tx / 64);
-                        // ty = floor(ty / 64);
-                        //cout << tx << " | " << ty << "\n";
+                        //mouse to world space with anchoring to 0.5 | 0.5
                         float screen_anchor_x = teto.x - WINDOW_WIDTH  / 2;
                         float screen_anchor_y = teto.y - WINDOW_HEIGHT / 2;
                         world.highlight.x = mx - world.highlight.w;
                         world.highlight.y = my - world.highlight.h;
                         float wx = mx + screen_anchor_x;
                         float wy = my + screen_anchor_y;
-                        wx = floor(wx / 64.0f)-10;
-                        wy = floor(wy / 64.0f)-7;
+                        wx = floor(wx / 64.0f);
+                        wy = floor(wy / 64.0f);
 
                         //cout <<wx << endl;
 
@@ -437,10 +432,6 @@ int main() {
                     }
 
                 }
-
-
-
-
 
             }
             //MOUSE DONE NOW KEYS
