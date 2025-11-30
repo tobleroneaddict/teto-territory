@@ -420,10 +420,12 @@ int main() {
                         // tx = floor(tx / 64);
                         // ty = floor(ty / 64);
                         //cout << tx << " | " << ty << "\n";
+                        float screen_anchor_x = teto.x - WINDOW_WIDTH  / 2;
+                        float screen_anchor_y = teto.y - WINDOW_HEIGHT / 2;
                         world.highlight.x = mx - world.highlight.w;
                         world.highlight.y = my - world.highlight.h;
-                        float wx = mx + teto.x;
-                        float wy = my + teto.y;
+                        float wx = mx + screen_anchor_x;
+                        float wy = my + screen_anchor_y;
                         wx = floor(wx / 64.0f)-10;
                         wy = floor(wy / 64.0f)-7;
 
