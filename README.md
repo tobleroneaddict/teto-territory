@@ -17,5 +17,5 @@
 | 1-9 | Spawn Item |
 
 ## BUILDING
-1. Install SDL3, SDL3_img, and tinyxml2 on your system.
+1. Install SDL3, SDL3_img, SDL3_ttf and tinyxml2 on your system.
 2. run `make`
