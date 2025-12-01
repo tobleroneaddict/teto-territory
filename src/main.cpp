@@ -12,7 +12,7 @@
 #include "../include/globals.h"
 #include "blackjack_engine.h"
 #include "phone.h"
-
+#include "legacyitemplacementcode.h"
 //World
 #include "tmxparse.h"
 
@@ -30,6 +30,9 @@ float mx,my;
 
 using namespace std;
 
+//TO IMPLEMENT:::::::::::::::::::::::::::
+//Hint tooltips for possible interactions
+std::vector<std::string> hint_stack;
 
 
 //Max bullets before start popping them from a list
@@ -68,25 +71,32 @@ SDL_FRect vingette_rect;
 
 class Teto_C {
 public:
+    //Physics
     float x,y,xv,yv, gun_out_x,gun_out_y;
     float max_speed = RUN_SPEED;
 
+    //Weapon
     int ammo;
     float bullet_cooldown;
 
     //Inventory
     bool holding_weapon = false;
+    Item* inventory = nullptr; //One item teto can hold
 
     World_C *world;
+
+    //Flags and status timers
     bool drunk = false;
     float drunk_timer = 0;
     bool driving = false;
     bool alt = true;
 
+    //Rendering
     bool teto_rendering = true;
     SDL_Texture* teto_textureL;
     SDL_Texture* teto_textureR;
     SDL_FRect player_rect;
+
     void run_motion();
     void fire_weapon();
 };
@@ -215,31 +225,36 @@ void Teto_C::fire_weapon() {
 
 
 int main() {
+    //Setup window
     gFrameBuffer = new int[WINDOW_WIDTH * WINDOW_HEIGHT];
     sdl_window = SDL_CreateWindow("Rainbet 2", WINDOW_WIDTH, WINDOW_HEIGHT,SDL_WINDOW_RESIZABLE);
-    SDL_SetRenderVSync(sdl_renderer, 0); //i had to do this to fix stuttying
+    //Setup font
+    if (!TTF_Init()) {cout << "TTF Error!\n"; return 1;}
+    TTF_Font* font = TTF_OpenFont("Assets/InclusiveSans-Medium.ttf", 24);
+    //Setup renderer
     sdl_renderer = SDL_CreateRenderer(sdl_window, NULL);
+    SDL_SetRenderVSync(sdl_renderer, 0); //i had to do this to fix stuttying
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
     SDL_SetTextureScaleMode(sdl_texture,SDL_SCALEMODE_NEAREST);
     textures = new Game_Textures;
     TMX tiles;
     world.tiles = &tiles;
     //Load map
-
     if (!tiles.load("Tiled/map.tmx")) return 1;
 
     //Load tiles class into the block selecter UI
     world.ui_block_selector.tiles = world.tiles;
     world.selected_block = 13; //set default to brick
 
-    if (!gFrameBuffer || !sdl_window || !sdl_renderer || !sdl_texture)
+    if (!gFrameBuffer || !sdl_window || !sdl_renderer || !sdl_texture) {
+        cout << "SDL3 init error!\n";
         return 1;
-
+    }
+    if (font == nullptr) { cout << "Font error!\n"; return 1;}
 
     //Shitty way of getting rand seed
     srand(std::uintptr_t(&sdl_texture));
 
-    //cout << reinterpret_cast<unsigned int>(&sdl_window) << endl;
     //Contains all the textures (call after the sdl; init stuff)
 
     textures->load(sdl_renderer);
@@ -266,7 +281,6 @@ int main() {
     world.teto_car.y = teto.y + 300;
 
     food.h = 80;
-    //food.w = 80;
     food.h = 120;
     food.w = 230;
 
@@ -315,12 +329,12 @@ int main() {
 
     //Randomly spawn beers
     for (int i = 0; i < 30; i++) {
-        Item lilitem;               lilitem.texture = textures->capsule;
+        Drop lilitem;               lilitem.texture = textures->capsule;
         lilitem.x = rand()  % MAX_WORLD_X;
         lilitem.y = rand()  % MAX_WORLD_Y;
         lilitem.scale = 0.2f;
         lilitem.id = 9;
-        world.dropped_items.push_back(lilitem);
+        //world.dropped_Drops.push_back(lilitem);
     }
 
     //Randomly spawn horses
@@ -336,11 +350,31 @@ int main() {
         world.horses.push_back(lehorse);
     }
 
+
+
+    //DEBUG: add barrel to car
+    Item thisitem;
+    thisitem.id = ID_BLUE_BARREL;
+    thisitem.set_texture(textures->cooking_barrel);
+
+
+    world.items.emplace_back(thisitem);
+
+    world.teto_car.stored_item = &world.items[0];
+
+
+
+
+
+
+
+
     while (!stop)
     {
         //dTs
         LAST = NOW;NOW = SDL_GetPerformanceCounter(); deltaTime = (double)((NOW - LAST)*1000 / (double)SDL_GetPerformanceFrequency() );
-
+        //Clean the hint stack
+        hint_stack.clear();
 
         SDL_GetWindowSizeInPixels(sdl_window,&WINDOW_WIDTH,&WINDOW_HEIGHT);
 
@@ -359,6 +393,17 @@ int main() {
         //Run teto user motion
         teto.run_motion();
 
+        //Append hint possibilities. this is derived from the input stuff, so if u update anything in there do them here as well
+        {
+            float carinventorydist = get_distance(teto.x,teto.y,(world.teto_car.flip) ? world.teto_car.x + 100 : world.teto_car.x - 100,world.teto_car.y);
+            if (carinventorydist < 100) hint_stack.emplace_back("E: Swap item in car");
+            float cardist = get_distance(teto.x,teto.y,world.teto_car.x,world.teto_car.y);
+            if (cardist < 100) {
+                if (teto.driving) {
+                    hint_stack.emplace_back("C: Exit car");    } else {hint_stack.emplace_back("C: Enter car");}
+            }
+        }
+
 
         //Oneshot key events
         SDL_Event e;
@@ -375,7 +420,7 @@ int main() {
 
 
             //THIS IS WHERE TO PUT CLICK EVENTS!!!!!!!!!!!!!!!!!
-            //LEFT CLICK EVENTS
+            //CLICK EVENTS
             if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
             {
 
@@ -408,11 +453,13 @@ int main() {
                     }
 
                 } //END phone screen actions
-                else {
-                    //ELSEWHERE (Not phone)
+                else { //WORLD ACTIONS
                     //Gun
                     if (teto.bullet_cooldown < 10 && teto.holding_weapon) teto.fire_weapon();
-                    if (!teto.holding_weapon) {
+
+
+                    //PLACE BLOCK
+                    else if (!teto.holding_weapon) {
                         //Block place
                         //mouse to world space with anchoring to 0.5 | 0.5
                         float screen_anchor_x = teto.x - WINDOW_WIDTH  / 2;
@@ -435,82 +482,10 @@ int main() {
 
             }
             //MOUSE DONE NOW KEYS
-            //Add flag on E
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_1) {
 
-                Item lilitem;               lilitem.texture = textures->flag;
-                lilitem.x = teto.x - 160;
-                lilitem.y = teto.y - 300;
-                lilitem.scale = 1.0f; lilitem.id = 1;
+            //Wraps the long, old placement code thats completely incomatible with everything else....which will probably be nuked someday
+            legacy_placement_code(&world,teto.x,teto.y,e);
 
-                world.dropped_items.push_back(lilitem);
-            }
-
-            //Bomb
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_2) {
-
-                Item lilitem;               lilitem.texture = textures->bomb;
-                lilitem.x = teto.x - 50;
-                lilitem.y = teto.y - 50;
-                lilitem.scale = 1.0f; lilitem.id = 2;
-                world.dropped_items.push_back(lilitem);
-            }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_3) {
-
-                Item lilitem;               lilitem.texture = textures->big_steppah;
-                lilitem.x = teto.x - 50;
-                lilitem.y = teto.y - 50;
-                lilitem.scale = 0.2f; lilitem.id = 3;
-                world.dropped_items.push_back(lilitem);
-            }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_4) {
-
-                Item lilitem;               lilitem.texture = textures->apple;
-                lilitem.x = teto.x - 50;
-                lilitem.y = teto.y - 50;
-                lilitem.scale = 0.2f;   lilitem.id = 4;
-                world.dropped_items.push_back(lilitem);
-            }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_5) {
-
-                Item lilitem;               lilitem.texture = textures->expedient;
-                lilitem.x = teto.x - 50;
-                lilitem.y = teto.y - 50;
-                lilitem.scale = 0.2f;   lilitem.id = 5;
-                world.dropped_items.push_back(lilitem);
-            }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_6) {
-
-                Item lilitem;               lilitem.texture = textures->bricks;
-                lilitem.x = teto.x - 50;
-                lilitem.y = teto.y - 50;
-                lilitem.scale = 0.4f;   lilitem.id = 6;
-                world.dropped_items.push_back(lilitem);
-            }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_7) {
-
-                Item lilitem;               lilitem.texture = textures->gun_texture;
-                lilitem.x = teto.x - 50;
-                lilitem.y = teto.y - 50;
-                lilitem.scale = 0.08f;  lilitem.id = 7;
-                world.dropped_items.push_back(lilitem);
-            }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_8) {
-
-                Item lilitem;               lilitem.texture = textures->agent;
-                lilitem.x = teto.x - 50;
-                lilitem.y = teto.y - 50;
-                lilitem.scale = 0.3f;   lilitem.id = 8;
-                world.dropped_items.push_back(lilitem);
-            }
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_9) {
-
-                Item lilitem;               lilitem.texture = textures->capsule;
-                lilitem.x = teto.x - 50;
-                lilitem.y = teto.y + 500;
-                lilitem.scale = 0.3f;   lilitem.id = 9;
-                world.dropped_items.push_back(lilitem);
-            }
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_K) { teto.alt = !teto.alt;}
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_G) { teto.holding_weapon = !teto.holding_weapon; }
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_F) {
@@ -527,17 +502,30 @@ int main() {
                 //cout << newrocket.tx << endl;
                 world.rockets.emplace_back(newrocket);
             }
-            //E action
+
+            //Swap item with inventory ( never deletes )
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_E) {
+                //Can swap with:
+                //On ground   |    Car     |     Machine    | ....anything else....
+                float cardist = get_distance(teto.x,teto.y,(world.teto_car.flip) ? world.teto_car.x + 100 : world.teto_car.x - 100      ,world.teto_car.y);
+                if (cardist < 100) {
+                    Item* item_temp;
+                    item_temp = world.teto_car.stored_item;
+                    world.teto_car.stored_item = teto.inventory;
+                    teto.inventory = item_temp;
+                }   
+                
+                
+            }
+
+            //Car exit/entry
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_C) {
                 float cardist = get_distance(teto.x,teto.y,world.teto_car.x,world.teto_car.y);
                 if (cardist < 100){ //Get in car
                 teto.driving = !teto.driving; teto.x = world.teto_car.x;teto.y = world.teto_car.y;           }
-                //cout << get_distance(teto.x,teto.y,world.teto_car.x - world.teto_car.rect.w/2,world.teto_car.y - world.teto_car.rect.h/2) << endl;
-                // ...... can put more here !!
             }
-            //BRAKES!!!!!!    // USES KEY DOWN / UP
-            if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_SPACE) { world.teto_car.brakes = true; teto.xv = 0; teto.yv = 0;}
-            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_SPACE) { world.teto_car.brakes = false;}
+            if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_SPACE) { world.teto_car.brakes = true; teto.xv = 0; teto.yv = 0;} //BRAKES!!!!!!    // USES KEY DOWN / UP
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_SPACE) { world.teto_car.brakes = false;} //BRAKES!!!!!!    // USES KEY DOWN / UP
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_H) { //spawn horse
                 Horse lehorse;  lehorse.colour = rand() % 10;
                 lehorse.vx = (rand() % 3)-1; lehorse.vy = (rand() % 3)-1;
@@ -641,8 +629,8 @@ int main() {
         SDL_FRect thingrect;
 
         //Render items
-        for (int i = 0; i < (int)world.dropped_items.size(); i++) {
-            Item* thing = &world.dropped_items[i];
+        for (int i = 0; i < (int)world.dropped_Drops.size(); i++) {
+            Drop* thing = &world.dropped_Drops[i];
 
             thingrect.x = thing->x - teto.x + WINDOW_WIDTH/2 - 25;
             thingrect.y = thing->y - teto.y + WINDOW_HEIGHT/2 - 25;
@@ -660,7 +648,7 @@ int main() {
                 if (distance < 50) { //Collides with pill
                     //phone.blackjack->balance -= 44; //Fee
                     teto.drunk_timer = 10000;
-                    world.dropped_items.erase(world.dropped_items.begin() + i); i--;
+                    world.dropped_Drops.erase(world.dropped_Drops.begin() + i); i--;
                 }
             }
 
@@ -979,6 +967,13 @@ int main() {
         ch_rect.y = my - ch_rect.h + textures->ch->h/2;
         if (teto.bullet_cooldown < 10) SDL_RenderTexture(sdl_renderer,textures->ch,nullptr,&ch_rect);
 
+        //Methinks that player item rendering should go here
+        
+        if (teto.inventory != nullptr) {
+            teto.inventory->rect.x = 0;
+            teto.inventory->rect.y = WINDOW_HEIGHT-128;
+            SDL_RenderTexture(sdl_renderer,teto.inventory->texture,nullptr,&teto.inventory->rect);
+        }
 
         //Vingette if drunk
         if (teto.drunk) {
@@ -987,13 +982,40 @@ int main() {
 
             SDL_RenderTexture(sdl_renderer,textures->vingette,nullptr,&vingette_rect);
         }
+
+        //test font
+        SDL_Color color = {255, 255, 255, 255}; // white
+        //HINTS
+
+        //Loop thru and append hints at bottom of screen
+        float lastx = 0;
+        for (int ti = 0; ti < (float)hint_stack.size(); ti++) { 
+            SDL_Surface* textSurface = TTF_RenderText_Blended(font,hint_stack[ti].c_str(),0, color);
+        
+            SDL_Texture* textTexture = SDL_CreateTextureFromSurface(sdl_renderer, textSurface);
+            SDL_DestroySurface(textSurface);
+            
+            SDL_FRect dstRect = {lastx,(float)(WINDOW_HEIGHT-textTexture->h),(float)textTexture->w,(float)textTexture->h};
+            lastx += 10 + textTexture->w;    //Accumulate widths + margin
+            dstRect.w += 10; //Push
+            SDL_RenderTexture(sdl_renderer, textures->hintbg, nullptr, &dstRect); //FONT
+            dstRect.w -= 10; //Pop
+            SDL_RenderTexture(sdl_renderer, textTexture, nullptr, &dstRect); //FONT
+        }
+        
+
+        //Final
+        
         SDL_RenderPresent(sdl_renderer);
-
-
-
 
         SDL_Delay(4); //dont remove this its black magic
     }
+
+    //Termination
+    SDL_DestroyRenderer(sdl_renderer);
+    SDL_DestroyWindow(sdl_window);
+    TTF_Quit(); SDL_Quit();
+    free(textures);
 
 
     return 0;

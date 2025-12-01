@@ -11,6 +11,7 @@
 #include <sstream>
 #include <cstdint>
 #include "tmxparse.h"
+#include "SDL3_ttf/SDL_ttf.h"
 
 extern int* gFrameBuffer;
 extern SDL_Window* sdl_window;
@@ -49,6 +50,25 @@ public:
         SDL_FRect rect;
 };
 
+enum ITEM_ID {
+    ID_BLUE_BARREL,
+    ID_ITEM_MAX
+};
+
+//Objects used for cooking, tools, etc.
+//The car also has one item slot
+class Item {
+public:
+    ITEM_ID id;
+    int count = 1;
+    SDL_FRect rect;
+    SDL_Texture* texture;
+    void set_texture(SDL_Texture* texas);
+};
+
+
+
+
 //A car (just one for now)
 class Car {
 public:
@@ -56,11 +76,14 @@ public:
     bool flip = false; //is bool bc we wanna save it for when teto is not driving
     bool brakes = false;
     SDL_FRect rect;
+    //Inventory (rendered in back of car)
+    Item* stored_item;
+
     void render(int xoff, int yoff);
 };
 
 //Dropped item
-class Item {
+class Drop {
 public:
     SDL_Texture* texture;
     int id = -1;
@@ -90,9 +113,10 @@ class World_C {
     public:
         std::vector<Enemy> enemies;
         std::vector<Bullet> bullets;
-        std::vector<Item> dropped_items;
+        std::vector<Drop> dropped_Drops;
         std::vector<Rocket> rockets;
         std::vector<Horse> horses;
+        std::vector<Item> items; //all the items in the world, handle inventories as pointers to some item in ths.
 
         int selected_block = 0;
 

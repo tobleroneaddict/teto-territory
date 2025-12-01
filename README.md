@@ -5,6 +5,8 @@
 | Key | Action |
 | -- | -- |
 | WASD | Movement |
+| E | Place / Grab Item |
+| C | Enter Car |
 | Space | Brake |
 | F | Rocket |
 | G | Gun |

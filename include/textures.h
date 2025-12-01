@@ -47,8 +47,10 @@ class Game_Textures {
         SDL_Texture* BG = nullptr;
         SDL_Texture* FG = nullptr;
         SDL_Texture* vingette = nullptr;
+        SDL_Texture* hintbg = nullptr;
 
-
+        //Cooking
+        SDL_Texture* cooking_barrel = nullptr;
 
 
         SDL_Texture* rocket = nullptr;
@@ -92,6 +94,9 @@ class Game_Textures {
             BG = IMG_LoadTexture(renderer, "Assets/UI/BG.png");
             FG = IMG_LoadTexture(renderer, "Assets/UI/FG.png");
             vingette = IMG_LoadTexture(renderer, "Assets/UI/vingette.png");
+            hintbg = IMG_LoadTexture(renderer, "Assets/UI/hintbg.png");
+
+            cooking_barrel = IMG_LoadTexture(renderer, "Assets/Cooking/barrel.png");
 
 
             return true;

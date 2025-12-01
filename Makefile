@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -O2 -Wall
-LIBS = -lSDL3 -lSDL3_image -ltinyxml2
+LIBS = -lSDL3 -lSDL3_image -ltinyxml2 -lSDL3_ttf
 HDRS = -I include
 SRC = ./src
 SRCS = $(wildcard $(SRC)/*.cpp)

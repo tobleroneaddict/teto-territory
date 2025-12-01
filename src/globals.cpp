@@ -25,19 +25,46 @@ float get_distance(float x1, float y1, float x2, float y2) {
     return ddddd;
 }
 
+//Item texture helper
+void Item::set_texture(SDL_Texture* texas) {
+    this->texture = texas;
+    //this->rect.h = texas->h;
+    //this->rect.w = texas->w; //this is silly if u have differentresolutions.
+    //Items are 128x128 on screen, make sure theyre square in Krita.
+    this->rect.h = 128;
+    this->rect.w = 128;
+    
+}
+
+
+//CAR RENDERING
                 //p.x      //p.y  passed in
 void Car::render(int xoff, int yoff) {
     rect.x = x - xoff + WINDOW_WIDTH/2 - rect.w/2 ;
     rect.y = y - yoff + WINDOW_HEIGHT/2 - rect.h/2 ;
 
-    //rect.x = x - xoff + rect.w/2 + 100; //draw in center
-    //rect.y = y - yoff + rect.h/2 + 150;
+    //First draw item in the backseat
+    if (stored_item != nullptr) {
+        if (stored_item->rect.h == 0) {std::cout << "Init item height dummy\n";}
+        //Transform to car
+        stored_item->rect.x = rect.x + rect.w / 5;
+        stored_item->rect.y = rect.y + rect.h / 4;
+        //if car flip
+        if (flip) stored_item->rect.x = rect.x + (rect.w / 1.7f);
+        
+        SDL_RenderTexture(sdl_renderer,stored_item->texture,nullptr,&stored_item->rect);
+
+    } //end backseat
+
+    //Now draw car over item
     if (flip) {
+        
         SDL_RenderTextureRotated(sdl_renderer,textures->car,nullptr,&rect,0,nullptr,SDL_FLIP_HORIZONTAL);
     } else {
     SDL_RenderTexture(sdl_renderer,textures->car,nullptr,&rect); //Draw car regardless
     }
 }
+
 
 //Render the block selector
 void UI_Blocks::render_UI_Block(int center_block_id,bool drawfg_thing) {   //Block selector UI
