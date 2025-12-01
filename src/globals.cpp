@@ -235,7 +235,7 @@ void Machine::render_pipe(float wx1, float wy1, float dx, float dy, float length
     float seglength = textures->pipe->w;
     int SEG_COUNT = (int)(length/seglength);
     dx /= length; dy /= length;
-    for (int i = 0; i < SEG_COUNT; i++) {
+    for (int i = 0; i < SEG_COUNT + 1; i++) {
         float step = (i*seglength) ;
         float sx = wx1 + dx * step;
         float sy = wy1 + dy * step;
@@ -273,7 +273,7 @@ void Machine::render(int xoff, int yoff) {
         
         x2 = input_A_machine->x; y2 = input_A_machine->y; 
         
-        wx1 = 224+x - xoff + WINDOW_WIDTH/2 - rect.w/2;
+        wx1 = 160+x - xoff + WINDOW_WIDTH/2 - rect.w/2;
         wy1 = 20+y - yoff + WINDOW_HEIGHT/2 - rect.h/2;
         wx2 = 128+x2 - xoff + WINDOW_WIDTH/2 - rect.w/2;
         wy2 = 200+y2 - yoff + WINDOW_HEIGHT/2 - rect.h/2;

@@ -1,4 +1,6 @@
+.vs/
 .vscode/
+*.user
 main
 *.o
 windowslibs/
@@ -7,3 +9,4 @@ result-*
 .*
 bin
 recipe.txt
+.DS_Store
