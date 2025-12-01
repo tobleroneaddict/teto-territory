@@ -115,70 +115,70 @@ void Teto_C::run_motion() { //also handles bullet cooldown
      } //otherwise, decrease
 
     //Keyboard inputs
-        SDL_PumpEvents(); //pump events??? that sounds nasty
+    SDL_PumpEvents(); //pump events??? that sounds nasty
 
-        const bool *keys = SDL_GetKeyboardState(NULL);
-        float max_speed_f = drunk ? max_speed * 0.01f : max_speed; //slower when drunk
-        if (driving) max_speed_f = CAR_SPEED;
+    const bool *keys = SDL_GetKeyboardState(NULL);
+    float max_speed_f = drunk ? max_speed * 0.01f : max_speed; //slower when drunk
+    if (driving) max_speed_f = CAR_SPEED;
 
-        //Input vectors
-        float inx = 0, iny = 0; float input_scale = 0.01;
-        iny -= (keys[SDL_SCANCODE_W])    * input_scale  * deltaTime;
-        iny -= -(keys[SDL_SCANCODE_S])   * input_scale  * deltaTime;
-        inx += -(keys[SDL_SCANCODE_A])   * input_scale  * deltaTime;
-        inx += (keys[SDL_SCANCODE_D])    * input_scale  * deltaTime;
+    //Input vectors
+    float inx = 0, iny = 0; float input_scale = 0.01;
+    iny -= (keys[SDL_SCANCODE_W])    * input_scale  * deltaTime;
+    iny -= -(keys[SDL_SCANCODE_S])   * input_scale  * deltaTime;
+    inx += -(keys[SDL_SCANCODE_A])   * input_scale  * deltaTime;
+    inx += (keys[SDL_SCANCODE_D])    * input_scale  * deltaTime;
 
-        //DUI handling
-        if (drunk && driving) {
-            if (((int)drunk_timer >> 9) % 2) {
-                inx = -iny;
-            }
-            xv += sin(x) * cos(y);
-            yv += (sin(x) * cos(y))/2;
+    //DUI handling
+    if (drunk && driving) {
+        if (((int)drunk_timer >> 9) % 2) {
+            inx = -iny;
         }
+        xv += sin(x) * cos(y);
+        yv += (sin(x) * cos(y))/2;
+    }
 
 
-        //Calc accel
+    //Calc accel
 
-        //Clamping
-        float velocity = sqrt((xv * xv) + (yv * yv));
+    //Clamping
+    float velocity = sqrt((xv * xv) + (yv * yv));
 
-        if (velocity > max_speed_f)
-        {
-            //Normalize n clamp
-            float nx = xv / velocity;
-            float ny = yv / velocity;
+    if (velocity > max_speed_f)
+    {
+        //Normalize n clamp
+        float nx = xv / velocity;
+        float ny = yv / velocity;
 
-            xv = max_speed_f * nx;
-            yv = max_speed_f * ny;
+        xv = max_speed_f * nx;
+        yv = max_speed_f * ny;
 
-        }
+    }
 
-        xv += inx * deltaTime;
-        yv += iny * deltaTime;
+    xv += inx * deltaTime;
+    yv += iny * deltaTime;
 
-        //Drag factor
-        float drag = (driving) ? 0.99f: 0.9f;
-        if (driving) {drag = (world->teto_car.brakes) ? 0.75f: drag;} //HIT DA BRAKES!! DURING Spacebar
-        xv *= drag;
-        yv *= drag;
+    //Drag factor
+    float drag = (driving) ? 0.99f: 0.9f;
+    if (driving) {drag = (world->teto_car.brakes) ? 0.75f: drag;} //HIT DA BRAKES!! DURING Spacebar
+    xv *= drag;
+    yv *= drag;
 
-        //if not top, left edge
-        bool left_edge_passed = ((x/* - WINDOW_WIDTH/2*/) + xv * deltaTime < 0);
-        bool top_edge_passed  = ((y/* - WINDOW_HEIGHT/2*/)+ yv * deltaTime < 0);
+    //if not top, left edge
+    bool left_edge_passed = ((x/* - WINDOW_WIDTH/2*/) + xv * deltaTime < 0);
+    bool top_edge_passed  = ((y/* - WINDOW_HEIGHT/2*/)+ yv * deltaTime < 0);
 
-        //ONLY RESTRICT IF GOING UP/LEFT WARDS, scoop player back in. one way valve
-        if (xv > 0) left_edge_passed = false;
-        if (yv > 0) top_edge_passed = false;
+    //ONLY RESTRICT IF GOING UP/LEFT WARDS, scoop player back in. one way valve
+    if (xv > 0) left_edge_passed = false;
+    if (yv > 0) top_edge_passed = false;
 
-        //Apply accel
-        if (!left_edge_passed) x += xv * deltaTime;
-        if (!top_edge_passed) y += yv * deltaTime;
+    //Apply accel
+    if (!left_edge_passed) x += xv * deltaTime;
+    if (!top_edge_passed) y += yv * deltaTime;
 
-        //bullet cooldown
-        if (bullet_cooldown < 0) { bullet_cooldown = 0;} //if below zero, set to zero
-        else {bullet_cooldown -= deltaTime; } //otherwise, decreases
-
+    //bullet cooldown
+    if (bullet_cooldown < 0) { bullet_cooldown = 0;} //if below zero, set to zero
+    else {bullet_cooldown -= deltaTime; } //otherwise, decreases
+    return;
 }
 
 void Teto_C::fire_weapon() {
@@ -217,10 +217,9 @@ void Teto_C::fire_weapon() {
     ebullet.vx = (nx * 10) +xv;
     ebullet.vy = (ny * 10) +yv;
 
-
-
-    //Create bullet
+    //add bullet
     world->bullets.push_back(ebullet);
+    return;
 }
 
 
@@ -362,11 +361,19 @@ int main() {
 
     world.teto_car.stored_item = &world.items[0];
 
+    //How to make a machine!:
+    for (int i = 1; i <= 2; i++) {
+        Machine mach;
+        mach.x = mach.y = teto.x + (300*i);
+        mach.x -= fmod(mach.x, 64);         //Really cool way of constraining to tile (ALWAYS DO THIS ON INSTANTIATION)
+        mach.y -= fmod(mach.y, 64);
+        mach.id = ID_CHEST; //sample
+        world.machines.push_back(mach);
+
+    }
 
 
-
-
-
+    
 
 
     while (!stop)
@@ -376,11 +383,10 @@ int main() {
         //Clean the hint stack
         hint_stack.clear();
 
-        SDL_GetWindowSizeInPixels(sdl_window,&WINDOW_WIDTH,&WINDOW_HEIGHT);
-
+        SDL_GetWindowSizeInPixels(sdl_window,&WINDOW_WIDTH,&WINDOW_HEIGHT); //Resizing
+        //Center player & gun
         teto.player_rect.x = (WINDOW_WIDTH/2)-40;
         teto.player_rect.y = (WINDOW_HEIGHT/2)-100;
-
         gun_rect.x = teto.player_rect.x - 100;
         gun_rect.y = teto.player_rect.y + 30;
 
@@ -393,6 +399,15 @@ int main() {
         //Run teto user motion
         teto.run_motion();
 
+
+        /*
+        _   _ ___ _   _ _____ ____  
+        | | | |_ _| \ | |_   _/ ___| 
+        | |_| || ||  \| | | | \___ \ 
+        |  _  || || |\  | | |  ___) |
+        |_| |_|___|_| \_| |_| |____/ 
+                                    
+        */
         //Append hint possibilities. this is derived from the input stuff, so if u update anything in there do them here as well
         {
             float carinventorydist = get_distance(teto.x,teto.y,(world.teto_car.flip) ? world.teto_car.x + 100 : world.teto_car.x - 100,world.teto_car.y);
@@ -401,6 +416,28 @@ int main() {
             if (cardist < 100) {
                 if (teto.driving) {
                     hint_stack.emplace_back("C: Exit car");    } else {hint_stack.emplace_back("C: Enter car");}
+            }
+
+            //Machines
+            if (!teto.driving) {
+                for (int i = 0; i < (int)world.machines.size(); i++) {
+                    Machine* thismach = &world.machines[i];
+                    float distance = get_distance(teto.x,teto.y,thismach->x,thismach->y);
+                    if (distance < 300) {
+                        
+                        //input A dist
+                        float distanceA = get_distance(teto.x,teto.y,thismach->x-96,thismach->y-160);
+                        //input B dist
+                        float distanceB = get_distance(teto.x,teto.y,thismach->x+96,thismach->y-160);
+                        //output dist
+                        float distanceO = get_distance(teto.x,teto.y,thismach->x,thismach->y+160);
+                        if (distanceA < 95) hint_stack.emplace_back("E: Connect A"); 
+                        if (distanceB < 95) hint_stack.emplace_back("E: Connect B"); 
+                        if (distanceO < 140) hint_stack.emplace_back("E: Connect O"); 
+                        cout << distance << endl;
+                        
+                    }
+                }
             }
         }
 
@@ -657,6 +694,11 @@ int main() {
 
         }
 
+        //Render Machines
+        for (int i = 0; i < (int)world.machines.size(); i++) {
+            Machine* thismach = &world.machines[i];
+            thismach->render(teto.x,teto.y);
+        }
 
         //Render player (on top)
         if (teto.teto_rendering) {

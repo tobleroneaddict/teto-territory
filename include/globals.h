@@ -49,10 +49,15 @@ public:
         float life_timer = 10000.0f; // 10 seconds
         SDL_FRect rect;
 };
-
+//What kind of Item
 enum ITEM_ID {
     ID_BLUE_BARREL,
     ID_ITEM_MAX
+};
+//What kind of machine
+enum MACHINE_ID {
+    ID_CHEST,
+    ID_MACHINE_MAX
 };
 
 //Objects used for cooking, tools, etc.
@@ -60,15 +65,50 @@ enum ITEM_ID {
 class Item {
 public:
     ITEM_ID id;
-    int count = 1;
+    float count = 1; //how many units of this stuff
     SDL_FRect rect;
     SDL_Texture* texture;
     void set_texture(SDL_Texture* texas);
 };
+//CAN CONTAIN MULTIPLE ITEMS
+class Machine{
+public:
+    //Depending on the machine id, it processes ONE OR TWO items into an output.
+    MACHINE_ID id;
+    
+    //BEHAVIOR:
+    //An input (A or B) can be either an item, or a machine's output.
+    //If it is an item, the item will be displayed.
+    //If it is a machine, the pipe will instead be displayed, and logic will use the item from the parent output.
+    //Likewise, the product will show an item OR a pipe.
+    //If a pipe is removed, nothing happens because the product is still there. 
+
+    //Resources 
+    Item* item_A; //Not compatibile with pipes
+    Item* item_B; //Not compatibile with pipes
+    
+    Item* product;
+
+    //Routing
+    Machine* input_A_machine;
+    Machine* input_B_machine;
+    Machine* output_machine;
+    //As host machine, i can connect my singular output to a child machine. 
+    void connect_output(Machine* child, bool a_or_b); //Connect output pipe to a or b of a child machine
+    void sever_output(); //Sever output pipe to the child machine 
+
+    //World
+    float x,y;
+    //Graphics
+    SDL_FRect rect = {0,0,256,256}; //Size of machine TEXTURE (might will depending on machine).
+    SDL_Texture* texture;
+    void render(int xoff, int yoff); //Renders this & the objects. maybe the output pipe too, down the road. Takes player pos
 
 
+};
 
 
+//CAN CONTAIN ITEM
 //A car (just one for now)
 class Car {
 public:
@@ -117,7 +157,7 @@ class World_C {
         std::vector<Rocket> rockets;
         std::vector<Horse> horses;
         std::vector<Item> items; //all the items in the world, handle inventories as pointers to some item in ths.
-
+        std::vector<Machine> machines; //YEAHH FACTORIOOO
         int selected_block = 0;
 
         //Top UI bar

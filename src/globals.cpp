@@ -33,7 +33,7 @@ void Item::set_texture(SDL_Texture* texas) {
     //Items are 128x128 on screen, make sure theyre square in Krita.
     this->rect.h = 128;
     this->rect.w = 128;
-    
+    return;
 }
 
 
@@ -63,6 +63,7 @@ void Car::render(int xoff, int yoff) {
     } else {
     SDL_RenderTexture(sdl_renderer,textures->car,nullptr,&rect); //Draw car regardless
     }
+    return;
 }
 
 
@@ -122,7 +123,7 @@ void UI_Blocks::render_UI_Block(int center_block_id,bool drawfg_thing) {   //Blo
     } else {
         SDL_RenderTexture(sdl_renderer,textures->BG,nullptr,&thisblock);
     }
-
+    return;
 }
 
 //2D MC style rendering
@@ -189,19 +190,69 @@ void World_C::renderLayer(float player_x, float player_y,int layer,TMX* tiles) {
 
         }
     }
+    return;
 }
 
 void World_C::renderBlockHighlight(float player_x, float player_y, float mx, float my) {
 
-        float screen_anchor_x = player_x - WINDOW_WIDTH  / 2;
-        float screen_anchor_y = player_y - WINDOW_HEIGHT / 2;
-        highlight.x = mx - highlight.w;
-        highlight.y = my - highlight.h;
-        float wx = mx + screen_anchor_x;
-        float wy = my + screen_anchor_y;
-        wx = floor(wx / 64.0f) * 64;
-        wy = floor(wy / 64.0f) * 64;
-        highlight.x = wx - screen_anchor_x;
-        highlight.y = wy - screen_anchor_y;
-        SDL_RenderTexture(sdl_renderer,textures->block_highlight,nullptr,&highlight);
+    float screen_anchor_x = player_x - WINDOW_WIDTH  / 2;
+    float screen_anchor_y = player_y - WINDOW_HEIGHT / 2;
+    highlight.x = mx - highlight.w;
+    highlight.y = my - highlight.h;
+    float wx = mx + screen_anchor_x;
+    float wy = my + screen_anchor_y;
+    wx = floor(wx / 64.0f) * 64;
+    wy = floor(wy / 64.0f) * 64;
+    highlight.x = wx - screen_anchor_x;
+    highlight.y = wy - screen_anchor_y;
+    SDL_RenderTexture(sdl_renderer,textures->block_highlight,nullptr,&highlight);
+    return;
+}
+
+
+//Connect output of host machine to a child machine
+void Machine::connect_output(Machine* child,bool a_or_b) { //I hope i dont have to expand this
+    output_machine = child;
+    child->input_A_machine = this;
+    return;
+}
+//Undo
+void Machine::sever_output() {
+    //find which input this is on and cut the pipe
+    if (output_machine->input_A_machine == this) {output_machine->input_A_machine = nullptr;} //If attached to A
+    if (output_machine->input_B_machine == this) {output_machine->input_B_machine = nullptr;} //If attached to B
+    output_machine = nullptr; //and on this side
+    return;
+}
+
+//based this off the car rendering
+void Machine::render(int xoff, int yoff) {
+
+    rect.x = x - xoff + WINDOW_WIDTH/2 - rect.w/2 ;
+    rect.y = y - yoff + WINDOW_HEIGHT/2 - rect.h/2 ;
+
+    //IF ITEM SHOWS UP WHEN PIPE SHOULD: (will) MAKE A FUNCITON THAT DROPS THE ITEM ON THE FLOOR AND PUTS RECT IN PLACE
+    //First draw item in the right slots
+    if (item_A != nullptr) { //if pipe: should be nullptr
+        //Transform to machine
+        item_A->rect.x = rect.x + rect.w / 5;
+        item_A->rect.y = rect.y + rect.h / 4;
+        SDL_RenderTexture(sdl_renderer,item_A->texture,nullptr,&item_A->rect);
+    }
+    if (item_B != nullptr) { //if pipe: should be nullptr
+        //Transform to machine
+        item_B->rect.x = rect.x + rect.w / 2;
+        item_B->rect.y = rect.y + rect.h / 4;
+        SDL_RenderTexture(sdl_renderer,item_B->texture,nullptr,&item_B->rect);
+    }
+
+    //Draw pipes
+    if (input_A_machine != nullptr) {}
+    if (input_B_machine != nullptr) {}
+    
+
+    //Draw machine
+    SDL_RenderTexture(sdl_renderer,textures->machine_basic,nullptr,&rect); 
+    
+    return;
 }

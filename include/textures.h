@@ -9,23 +9,25 @@
 //All the textures in the game
 class Game_Textures {
     public:
+        //Tiler
         SDL_Texture* tile_atlas = nullptr;
 
+        //Player, world
         SDL_Texture* teto_texture_alt = nullptr;
         SDL_Texture* teto_texture_r = nullptr;
         SDL_Texture* teto_texture_fold = nullptr;
         SDL_Texture* enemy_texture = nullptr;
         SDL_Texture* car = nullptr;
         SDL_Texture* horse = nullptr;
-
         SDL_Texture* tiling_texture = nullptr;
         SDL_Texture* sand_texture = nullptr;
-
         SDL_Texture* gun_texture = nullptr;
         SDL_Texture* ch = nullptr;
         SDL_Texture* bullet = nullptr;
+        SDL_Texture* rocket = nullptr;
+        SDL_Texture* capsule = nullptr; //Beer
 
-        //Objects
+        //Legacy Objects
         SDL_Texture* flag = nullptr;
         SDL_Texture* bomb = nullptr;
         SDL_Texture* expedient = nullptr;
@@ -33,8 +35,8 @@ class Game_Textures {
         SDL_Texture* apple = nullptr;
         SDL_Texture* bricks = nullptr;
         SDL_Texture* agent = nullptr;
-        SDL_Texture* capsule = nullptr;
-
+       
+        //UI Elements
         SDL_Texture* phone = nullptr;
         SDL_Texture* card_atlas = nullptr;
         SDL_Texture* hitstand = nullptr;
@@ -42,8 +44,6 @@ class Game_Textures {
         SDL_Texture* playbutton = nullptr;
         SDL_Texture* block_highlight = nullptr;
         SDL_Texture* block_highlight_arrow = nullptr;
-
-        //BG/FG selector
         SDL_Texture* BG = nullptr;
         SDL_Texture* FG = nullptr;
         SDL_Texture* vingette = nullptr;
@@ -52,8 +52,11 @@ class Game_Textures {
         //Cooking
         SDL_Texture* cooking_barrel = nullptr;
 
+        //Machines
+        SDL_Texture* machine_basic = nullptr;
 
-        SDL_Texture* rocket = nullptr;
+
+        
 
         bool load(SDL_Renderer* renderer) {
             tile_atlas = IMG_LoadTexture(renderer, "Assets/atlas.png");
@@ -98,6 +101,7 @@ class Game_Textures {
 
             cooking_barrel = IMG_LoadTexture(renderer, "Assets/Cooking/barrel.png");
 
+            machine_basic = IMG_LoadTexture(renderer, "Assets/Cooking/machine_basic.png");
 
             return true;
         }
