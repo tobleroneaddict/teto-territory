@@ -111,12 +111,19 @@ private:
 struct Machine_Selecting {
     Machine* nearby; //Machine nearby (one that triggers hittable)
     Machine* last; //Last machine clicked
+    //PIPING
     bool output_hittable;
     bool inputa_hittable;
     bool inputb_hittable;
     bool removable; //can remove link
     bool inputa_removable;
     bool inputb_removable;
+    //STATIC ITEM
+    bool item_a_hittable;
+    bool item_b_hittable;
+    
+
+
 };
 
 //CAN CONTAIN ITEM

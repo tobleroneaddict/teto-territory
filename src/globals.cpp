@@ -255,20 +255,20 @@ void Machine::render(int xoff, int yoff) {
         rect.y = y - yoff + WINDOW_HEIGHT/2 - rect.h/2 ;
 
         //IF ITEM SHOWS UP WHEN PIPE SHOULD: (will) MAKE A FUNCITON THAT DROPS THE ITEM ON THE FLOOR AND PUTS RECT IN PLACE
+        
         //First draw item in the right slots
         //ONLY IN MODE 2
-    
         if (mode == 2) {
             if (item_A != nullptr) { //if pipe: should be nullptr
                 //Transform to machine
-                item_A->rect.x = rect.x + rect.w / 5;
-                item_A->rect.y = rect.y + rect.h / 4;
+                item_A->rect.x = rect.x + rect.w / 5 - 80;
+                item_A->rect.y = rect.y + rect.h / 4 - 128;
                 SDL_RenderTexture(sdl_renderer,item_A->texture,nullptr,&item_A->rect);
             }
             if (item_B != nullptr) { //if pipe: should be nullptr
                 //Transform to machine
                 item_B->rect.x = rect.x + rect.w / 2;
-                item_B->rect.y = rect.y + rect.h / 4;
+                item_B->rect.y = rect.y + rect.h / 4 - 128;
                 SDL_RenderTexture(sdl_renderer,item_B->texture,nullptr,&item_B->rect);
             }
         }

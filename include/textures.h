@@ -55,6 +55,9 @@ class Game_Textures {
         //Machines
         SDL_Texture* machine_basic = nullptr;
         SDL_Texture* machine_tank = nullptr;
+        SDL_Texture* machine_oven = nullptr;
+
+
         SDL_Texture* pipe = nullptr;
 
         
@@ -104,6 +107,8 @@ class Game_Textures {
 
             machine_basic = IMG_LoadTexture(renderer, "Assets/Cooking/machine_basic.png");
             machine_tank = IMG_LoadTexture(renderer, "Assets/Cooking/machine_tank.png");
+            machine_oven = IMG_LoadTexture(renderer, "Assets/Cooking/machine_oven.png");
+            
             pipe = IMG_LoadTexture(renderer, "Assets/Cooking/pipe.png");
 
             return true;

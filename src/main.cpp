@@ -370,7 +370,7 @@ int main() {
 
         //Very important note:::::::::: This is the machine top texture.
         //Renders MACHINE BASIC mode 0    PIPES mode 1  MACHINE TEXTURE (top) mode 2
-        mach.texture = textures->machine_tank;
+        mach.texture = textures->machine_oven;
         mach.x = mach.y = teto.x + (300*i);
         mach.x -= fmod(mach.x, 64);         //Really cool way of constraining to tile (ALWAYS DO THIS ON INSTANTIATION)
         mach.y -= fmod(mach.y, 64);
@@ -381,7 +381,7 @@ int main() {
     world.machines[0].connect_output(&world.machines[1],1);
 
     
-
+    cout << "NTS: so item does go back to player if you overwrite a pipe of a machine. now test this if the player has an item already. this should cancel/ just stop the pipe placement\n";
 
     while (!stop)
     {
@@ -447,6 +447,7 @@ int main() {
                         if (distanceB < 95 && mach_selecting.last != nullptr)  {(thismach->input_B_machine == nullptr && thismach->input_A_machine == nullptr) ? hint_stack.emplace_back("E: Connect Input B") : hint_stack.emplace_back("E: Reroute Input B"); mach_selecting.inputb_hittable = true; mach_selecting.nearby = thismach; } else {mach_selecting.inputb_hittable = false;}
                         if (distanceO < 140 && mach_selecting.last == nullptr) {(thismach->output_machine  == nullptr) ? hint_stack.emplace_back("E: Connect Output") : hint_stack.emplace_back("E: Reroute Output"); mach_selecting.output_hittable = true; mach_selecting.nearby = thismach; } else {mach_selecting.output_hittable = false;}
                         if (mach_selecting.inputa_hittable + mach_selecting.inputb_hittable + mach_selecting.output_hittable == 0) {mach_selecting.nearby = nullptr;} //if none selectable, nearby is null.
+                        
                         //Allow remove pipe action (must not be holding a pipe) (THIS IS NOT DROP PIPE)
                         mach_selecting.removable = false; //clear flag for rewrite
 
@@ -458,6 +459,21 @@ int main() {
                         //if (distanceB < 95 && mach_selecting.last == nullptr && mach_selecting.inputb_removable) {hint_stack.emplace_back("R: Remove Pipe");mach_selecting.removable = true;}
                         //TODO: allow this behavior from the child side
                         //Doesnt work yet
+
+                        //Now do item stuff (not pipe) .. its 4 am
+                        if (distanceA < 95) {
+                            mach_selecting.item_a_hittable = true; mach_selecting.item_b_hittable = false; 
+                            if (thismach->item_A == nullptr) { if (teto.inventory != nullptr) hint_stack.emplace_back("E: Place in Slot A");}
+                            else { hint_stack.emplace_back("E: Remove from Slot A");}
+                            mach_selecting.nearby = thismach;
+                        }
+
+                        if (distanceB < 95) {
+                            mach_selecting.item_b_hittable = true;  mach_selecting.item_a_hittable = false;
+                            if (thismach->item_B == nullptr) { if (teto.inventory != nullptr) hint_stack.emplace_back("E: Place in Slot B");}
+                            else { hint_stack.emplace_back("E: Remove from Slot B"); }
+                            mach_selecting.nearby = thismach;
+                        }
                     }
                 }
             }
@@ -583,7 +599,7 @@ int main() {
                         } else if (mach_selecting.inputb_hittable) {
                             mach_selecting.last->connect_output(mach_selecting.nearby, true);
                         }
-                        mach_selecting.last = nullptr; mach_selecting.nearby = nullptr; //clean up
+                        mach_selecting.last = nullptr; //clean up
                     } else {
                         if (mach_selecting.last == nullptr) cout << "last was null\n";
                         if (mach_selecting.nearby == nullptr) cout << "nearby was null\n";
@@ -597,6 +613,41 @@ int main() {
                     item_temp = world.teto_car.stored_item;
                     world.teto_car.stored_item = teto.inventory;
                     teto.inventory = item_temp;
+                }
+
+                //Put / Take item, swap
+                if (mach_selecting.nearby != nullptr) {
+                    if (mach_selecting.item_a_hittable) {
+                        if (teto.inventory && !mach_selecting.nearby->item_A) { //TETO TO MACHINE
+                            mach_selecting.nearby->item_A = teto.inventory;
+                            teto.inventory = nullptr;
+                            //cout << "Placed item into machine\n";
+                        } else if (!teto.inventory && mach_selecting.nearby->item_A) { //MACHINE TO TETO
+                            teto.inventory = mach_selecting.nearby->item_A;
+                            mach_selecting.nearby->item_A = nullptr;
+                        } else if (teto.inventory && mach_selecting.nearby->item_A) { //SWAP
+                            Item* temp = teto.inventory;
+                            teto.inventory = mach_selecting.nearby->item_A;
+                            mach_selecting.nearby->item_A = temp;
+                            //cout << "Swapped items\n";
+                        }
+                    } else
+                    if (mach_selecting.item_b_hittable) {
+                        if (teto.inventory && !mach_selecting.nearby->item_B) { //TETO TO MACHINE
+                            mach_selecting.nearby->item_B = teto.inventory;
+                            teto.inventory = nullptr;
+                            //cout << "Placed item into machine\n";
+                        } else if (!teto.inventory && mach_selecting.nearby->item_B) { //MACHINE TO TETO
+                            teto.inventory = mach_selecting.nearby->item_B;
+                            mach_selecting.nearby->item_B = nullptr;
+                            //cout << "Took item from machine\n";
+                        } else if (teto.inventory && mach_selecting.nearby->item_B) { //SWAP
+                            Item* temp = teto.inventory;
+                            teto.inventory = mach_selecting.nearby->item_B;
+                            mach_selecting.nearby->item_B = temp;
+                            //cout << "Swapped items\n";
+                        }
+                    }
                 }
             }
             //Remove pipe
