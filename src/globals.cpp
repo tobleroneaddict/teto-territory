@@ -213,7 +213,12 @@ void World_C::renderBlockHighlight(float player_x, float player_y, float mx, flo
 //Connect output of host machine to a child machine
 void Machine::connect_output(Machine* child,bool a_or_b) { //I hope i dont have to expand this
     output_machine = child;
-    child->input_A_machine = this;
+
+    if (a_or_b) {
+        child->input_A_machine = this; if (child->input_B_machine == this) child->input_B_machine = nullptr;
+    } else {
+        child->input_B_machine = this; if (child->input_A_machine == this) child->input_A_machine = nullptr;
+    }
     return;
 }
 //Undo
@@ -225,8 +230,23 @@ void Machine::sever_output() {
     return;
 }
 
+//Screen space piping (from Machine::render)
+void Machine::render_pipe(float wx1, float wy1, float dx, float dy, float length, float angle) {
+    float seglength = textures->pipe->w;
+    int SEG_COUNT = (int)(length/seglength);
+    dx /= length; dy /= length;
+    for (int i = 0; i < SEG_COUNT; i++) {
+        float step = (i*seglength) ;
+        float sx = wx1 + dx * step;
+        float sy = wy1 + dy * step;
+        SDL_FRect dstpipe = { sx,sy, seglength, 32};
+        SDL_RenderTextureRotated(sdl_renderer,textures->pipe,nullptr,&dstpipe,angle,NULL,SDL_FLIP_VERTICAL);
+    }
+}
+
 //based this off the car rendering
 void Machine::render(int xoff, int yoff) {
+
 
     rect.x = x - xoff + WINDOW_WIDTH/2 - rect.w/2 ;
     rect.y = y - yoff + WINDOW_HEIGHT/2 - rect.h/2 ;
@@ -246,13 +266,46 @@ void Machine::render(int xoff, int yoff) {
         SDL_RenderTexture(sdl_renderer,item_B->texture,nullptr,&item_B->rect);
     }
 
-    //Draw pipes
-    if (input_A_machine != nullptr) {}
-    if (input_B_machine != nullptr) {}
+    float wx1,wx2,wy1,wy2; //window x,y for pipe draw
+    //Draw a super cool pipe(s)
+    if (input_A_machine != nullptr) {
+        float x2,y2;
+        
+        x2 = input_A_machine->x; y2 = input_A_machine->y; 
+        
+        wx1 = 224+x - xoff + WINDOW_WIDTH/2 - rect.w/2;
+        wy1 = 20+y - yoff + WINDOW_HEIGHT/2 - rect.h/2;
+        wx2 = 128+x2 - xoff + WINDOW_WIDTH/2 - rect.w/2;
+        wy2 = 200+y2 - yoff + WINDOW_HEIGHT/2 - rect.h/2;
+
+        float dx = wx2 - wx1;
+        float dy = wy2 - wy1;
+        float len = sqrt(dx*dx + dy*dy);
+        float angle = atan2(dy,dx) * 180.0f / M_PI;
+        
+        render_pipe(wx1,wy1,dx,dy,len,angle);
+        SDL_RenderLine(sdl_renderer,wx1,wy1,wx2,wy2);
+    }
+    if (input_B_machine != nullptr) {
+        float x2,y2;
+        x2 = input_B_machine->x; y2 = input_B_machine->y; 
+        wx1 = 32+x - xoff + WINDOW_WIDTH/2 - rect.w/2;
+        wy1 = 20+y - yoff + WINDOW_HEIGHT/2 - rect.h/2;
+        wx2 = 128+x2 - xoff + WINDOW_WIDTH/2 - rect.w/2;
+        wy2 = 200+y2 - yoff + WINDOW_HEIGHT/2 - rect.h/2;
+
+        float dx = wx2 - wx1;
+        float dy = wy2 - wy1;
+        float len = sqrt(dx*dx + dy*dy);
+        float angle = atan2(dy,dx) * 180.0f / M_PI;
+        
+        render_pipe(wx1, wy1,dx,dy,len,angle);
+        SDL_RenderLine(sdl_renderer,wx1,wy1,wx2,wy2);
+    }
     
 
     //Draw machine
-    SDL_RenderTexture(sdl_renderer,textures->machine_basic,nullptr,&rect); 
+    SDL_RenderTexture(sdl_renderer,texture,nullptr,&rect); 
     
     return;
 }

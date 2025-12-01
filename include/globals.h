@@ -103,10 +103,20 @@ public:
     SDL_FRect rect = {0,0,256,256}; //Size of machine TEXTURE (might will depending on machine).
     SDL_Texture* texture;
     void render(int xoff, int yoff); //Renders this & the objects. maybe the output pipe too, down the road. Takes player pos
-
-
+private:
+    void render_pipe(float wx1, float wy1,float dx, float dy, float length, float angle); //screen space piping
 };
 
+struct Machine_Selecting {
+    Machine* nearby; //Machine nearby (one that triggers hittable)
+    Machine* last; //Last machine clicked
+    bool output_hittable;
+    bool inputa_hittable;
+    bool inputb_hittable;
+    bool removable; //can remove link
+    bool inputa_removable;
+    bool inputb_removable;
+};
 
 //CAN CONTAIN ITEM
 //A car (just one for now)

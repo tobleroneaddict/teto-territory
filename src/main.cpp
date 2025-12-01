@@ -18,6 +18,7 @@
 
 bool fullscreen = false;
 
+Machine_Selecting mach_selecting;
 
 //World of all da stuff
 World_C world;
@@ -89,7 +90,7 @@ public:
     bool drunk = false;
     float drunk_timer = 0;
     bool driving = false;
-    bool alt = true;
+    bool alt = false;
 
     //Rendering
     bool teto_rendering = true;
@@ -364,6 +365,7 @@ int main() {
     //How to make a machine!:
     for (int i = 1; i <= 2; i++) {
         Machine mach;
+        mach.texture = textures->machine_basic;
         mach.x = mach.y = teto.x + (300*i);
         mach.x -= fmod(mach.x, 64);         //Really cool way of constraining to tile (ALWAYS DO THIS ON INSTANTIATION)
         mach.y -= fmod(mach.y, 64);
@@ -371,7 +373,7 @@ int main() {
         world.machines.push_back(mach);
 
     }
-
+    world.machines[0].connect_output(&world.machines[1],1);
 
     
 
@@ -404,19 +406,19 @@ int main() {
         _   _ ___ _   _ _____ ____  
         | | | |_ _| \ | |_   _/ ___| 
         | |_| || ||  \| | | | \___ \ 
-        |  _  || || |\  | | |  ___) |
-        |_| |_|___|_| \_| |_| |____/ 
+        |  _  || || |\  | | |  ___) | 
+        |_| |_|___|_| \_| |_| |____/        (and pipe select calcs)
                                     
         */
         //Append hint possibilities. this is derived from the input stuff, so if u update anything in there do them here as well
+        //Machine input selections is also calculated here, to prevent time wasting double handling.
         {
             float carinventorydist = get_distance(teto.x,teto.y,(world.teto_car.flip) ? world.teto_car.x + 100 : world.teto_car.x - 100,world.teto_car.y);
-            if (carinventorydist < 100) hint_stack.emplace_back("E: Swap item in car");
             float cardist = get_distance(teto.x,teto.y,world.teto_car.x,world.teto_car.y);
-            if (cardist < 100) {
-                if (teto.driving) {
-                    hint_stack.emplace_back("C: Exit car");    } else {hint_stack.emplace_back("C: Enter car");}
-            }
+            
+            //PIPE HINTS (AND PIPE SELECT CALCULATIONS)
+            if (mach_selecting.last != nullptr) { hint_stack.emplace_back("[Holding Pipe] R: Drop Pipe");}
+            else if (carinventorydist < 90) hint_stack.emplace_back("E: Swap item in car");
 
             //Machines
             if (!teto.driving) {
@@ -431,16 +433,37 @@ int main() {
                         float distanceB = get_distance(teto.x,teto.y,thismach->x+96,thismach->y-160);
                         //output dist
                         float distanceO = get_distance(teto.x,teto.y,thismach->x,thismach->y+160);
-                        if (distanceA < 95) hint_stack.emplace_back("E: Connect A"); 
-                        if (distanceB < 95) hint_stack.emplace_back("E: Connect B"); 
-                        if (distanceO < 140) hint_stack.emplace_back("E: Connect O"); 
-                        cout << distance << endl;
-                        
+
+
+                        //Output first, then input
+
+                        //Allow connect pipe action
+                        if (distanceA < 95 && mach_selecting.last != nullptr)  {(thismach->input_B_machine == nullptr && thismach->input_A_machine == nullptr) ? hint_stack.emplace_back("E: Connect Input A") : hint_stack.emplace_back("E: Reroute Input A"); mach_selecting.inputa_hittable = true; mach_selecting.nearby = thismach; } else {mach_selecting.inputa_hittable = false;}
+                        if (distanceB < 95 && mach_selecting.last != nullptr)  {(thismach->input_B_machine == nullptr && thismach->input_A_machine == nullptr) ? hint_stack.emplace_back("E: Connect Input B") : hint_stack.emplace_back("E: Reroute Input B"); mach_selecting.inputb_hittable = true; mach_selecting.nearby = thismach; } else {mach_selecting.inputb_hittable = false;}
+                        if (distanceO < 140 && mach_selecting.last == nullptr) {(thismach->output_machine  == nullptr) ? hint_stack.emplace_back("E: Connect Output") : hint_stack.emplace_back("E: Reroute Output"); mach_selecting.output_hittable = true; mach_selecting.nearby = thismach; } else {mach_selecting.output_hittable = false;}
+                        if (mach_selecting.inputa_hittable + mach_selecting.inputb_hittable + mach_selecting.output_hittable == 0) {mach_selecting.nearby = nullptr;} //if none selectable, nearby is null.
+                        //Allow remove pipe action (must not be holding a pipe) (THIS IS NOT DROP PIPE)
+                        mach_selecting.removable = false; //clear flag for rewrite
+
+                        //f (distanceA < 95 && thismach->input_A_machine != nullptr) {mach_selecting.inputa_removable = true;} else { mach_selecting.inputa_removable = false;}
+                        //if (distanceB < 95 && thismach->input_B_machine != nullptr) {mach_selecting.inputb_removable = true;} else { mach_selecting.inputb_removable = false;}
+                        //Feeds down
+                        if (distanceO < 140&& mach_selecting.last == nullptr && thismach->output_machine != nullptr) {hint_stack.emplace_back("R: Remove Pipe");mach_selecting.removable = true;}
+                        //if (distanceA < 95 && mach_selecting.last == nullptr && mach_selecting.inputa_removable) {hint_stack.emplace_back("R: Remove Pipe");mach_selecting.removable = true;}
+                        //if (distanceB < 95 && mach_selecting.last == nullptr && mach_selecting.inputb_removable) {hint_stack.emplace_back("R: Remove Pipe");mach_selecting.removable = true;}
+                        //TODO: allow this behavior from the child side
+                        //Doesnt work yet
                     }
                 }
             }
-        }
+           
 
+            if (cardist < 100) {
+                if (teto.driving) {
+                    hint_stack.emplace_back("C: Exit Car");    } else {hint_stack.emplace_back("C: Enter Car");}
+            }
+        }
+        //cout << mach_selecting.inputa_hittable << mach_selecting.inputb_hittable << mach_selecting.output_hittable << endl;
 
         //Oneshot key events
         SDL_Event e;
@@ -542,17 +565,51 @@ int main() {
 
             //Swap item with inventory ( never deletes )
             if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_E) {
+                //Pipe takes priority over Item transfer
                 //Can swap with:
                 //On ground   |    Car     |     Machine    | ....anything else....
                 float cardist = get_distance(teto.x,teto.y,(world.teto_car.flip) ? world.teto_car.x + 100 : world.teto_car.x - 100      ,world.teto_car.y);
-                if (cardist < 100) {
+                
+                if (mach_selecting.inputa_hittable || mach_selecting.inputb_hittable) //Place pipe
+                {
+                    if (mach_selecting.last != nullptr && mach_selecting.nearby != nullptr              && mach_selecting.last != mach_selecting.nearby) {
+                        if (mach_selecting.inputa_hittable) {
+                            mach_selecting.last->connect_output(mach_selecting.nearby, false);
+                        } else if (mach_selecting.inputb_hittable) {
+                            mach_selecting.last->connect_output(mach_selecting.nearby, true);
+                        }
+                        mach_selecting.last = nullptr; mach_selecting.nearby = nullptr; //clean up
+                    } else {
+                        if (mach_selecting.last == nullptr) cout << "last was null\n";
+                        if (mach_selecting.nearby == nullptr) cout << "nearby was null\n";
+                        
+                    }    
+                } else if (mach_selecting.output_hittable) { //Check machine output flag
+                    
+                    mach_selecting.last = mach_selecting.nearby; //Grab pipe
+                } else if (cardist < 90) {
                     Item* item_temp;
                     item_temp = world.teto_car.stored_item;
                     world.teto_car.stored_item = teto.inventory;
                     teto.inventory = item_temp;
-                }   
-                
-                
+                }
+            }
+            //Remove pipe
+            if (e.type == SDL_EVENT_KEY_UP && e.key.key == SDLK_R) { 
+                if (mach_selecting.last != nullptr) { mach_selecting.last = nullptr;} //if holding pipe? DROP PIPE.
+                else if (mach_selecting.removable) {
+                    //Distinguish if this is the host or child
+                    if (mach_selecting.inputa_removable || mach_selecting.inputb_removable) {
+                        if (mach_selecting.inputa_removable) { //its A
+                            mach_selecting.nearby->input_A_machine->sever_output();
+                        } else if (mach_selecting.inputb_removable) { //its B
+                            mach_selecting.nearby->input_B_machine->sever_output();
+                        }
+                    } else if (mach_selecting.output_hittable) {
+                        mach_selecting.nearby->sever_output();
+                    }
+                    
+                }
             }
 
             //Car exit/entry
@@ -1048,6 +1105,8 @@ int main() {
 
         //Final
         
+
+
         SDL_RenderPresent(sdl_renderer);
 
         SDL_Delay(4); //dont remove this its black magic
