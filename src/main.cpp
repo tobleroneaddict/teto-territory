@@ -235,6 +235,8 @@ int main() {
     sdl_renderer = SDL_CreateRenderer(sdl_window, NULL);
     SDL_SetRenderVSync(sdl_renderer, 0); //i had to do this to fix stuttying
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
     SDL_SetTextureScaleMode(sdl_texture,SDL_SCALEMODE_NEAREST);
     textures = new Game_Textures;
     TMX tiles;
@@ -365,7 +367,10 @@ int main() {
     //How to make a machine!:
     for (int i = 1; i <= 2; i++) {
         Machine mach;
-        mach.texture = textures->machine_basic;
+
+        //Very important note:::::::::: This is the machine top texture.
+        //Renders MACHINE BASIC mode 0    PIPES mode 1  MACHINE TEXTURE (top) mode 2
+        mach.texture = textures->machine_tank;
         mach.x = mach.y = teto.x + (300*i);
         mach.x -= fmod(mach.x, 64);         //Really cool way of constraining to tile (ALWAYS DO THIS ON INSTANTIATION)
         mach.y -= fmod(mach.y, 64);
@@ -752,6 +757,8 @@ int main() {
         }
 
         //Render Machines
+
+        //BASIC PASS
         for (int i = 0; i < (int)world.machines.size(); i++) {
             Machine* thismach = &world.machines[i];
             thismach->render(teto.x,teto.y);

@@ -17,6 +17,7 @@ extern int* gFrameBuffer;
 extern SDL_Window* sdl_window;
 extern SDL_Renderer* sdl_renderer;
 extern SDL_Texture* sdl_texture;
+
 extern Game_Textures* textures;
 extern int WINDOW_WIDTH;
 extern int WINDOW_HEIGHT;
