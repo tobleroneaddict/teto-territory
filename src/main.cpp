@@ -235,8 +235,6 @@ int main() {
     sdl_renderer = SDL_CreateRenderer(sdl_window, NULL);
     SDL_SetRenderVSync(sdl_renderer, 0); //i had to do this to fix stuttying
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-
     SDL_SetTextureScaleMode(sdl_texture,SDL_SCALEMODE_NEAREST);
     textures = new Game_Textures;
     TMX tiles;
@@ -356,7 +354,7 @@ int main() {
 
     //DEBUG: add barrel to car
     Item thisitem;
-    thisitem.id = ID_BLUE_BARREL;
+    thisitem.id = ID_ITEM_BLUE_BARREL;
     thisitem.set_texture(textures->cooking_barrel);
 
 
@@ -371,18 +369,16 @@ int main() {
         //Very important note:::::::::: This is the machine top texture.
         //Renders MACHINE BASIC mode 0    PIPES mode 1  MACHINE TEXTURE (top) mode 2
         mach.texture = textures->machine_oven;
+        mach.id = ID_MACHINE_OVEN;
         mach.x = mach.y = teto.x + (300*i);
         mach.x -= fmod(mach.x, 64);         //Really cool way of constraining to tile (ALWAYS DO THIS ON INSTANTIATION)
         mach.y -= fmod(mach.y, 64);
-        mach.id = ID_CHEST; //sample
         world.machines.push_back(mach);
 
     }
-    world.machines[0].connect_output(&world.machines[1],1);
+    world.machines[0].connect_output(&world.machines[1],0);
 
     
-    cout << "NTS: so item does go back to player if you overwrite a pipe of a machine. now test this if the player has an item already. this should cancel/ just stop the pipe placement\n";
-
     while (!stop)
     {
         //dTs
@@ -593,17 +589,23 @@ int main() {
                 
                 if (mach_selecting.inputa_hittable || mach_selecting.inputb_hittable) //Place pipe
                 {
-                    if (mach_selecting.last != nullptr && mach_selecting.nearby != nullptr              && mach_selecting.last != mach_selecting.nearby) {
-                        if (mach_selecting.inputa_hittable) {
-                            mach_selecting.last->connect_output(mach_selecting.nearby, false);
-                        } else if (mach_selecting.inputb_hittable) {
-                            mach_selecting.last->connect_output(mach_selecting.nearby, true);
+                    cout << "placepipe\n";
+                    //Ensure last,nearby exists, and not == to eachother
+                    if (mach_selecting.last != nullptr && mach_selecting.nearby != nullptr&& mach_selecting.last != mach_selecting.nearby) { 
+                        //Player cannot be holding an item and place a pipe if theres an item in the slot already
+                        ///     V
+                        // easy: just dont connect pipe if theres an item.
+
+                        if (mach_selecting.inputa_hittable) {   //Connect held pipe to input A 
+                            if (mach_selecting.nearby->item_A == nullptr) mach_selecting.last->connect_output(mach_selecting.nearby, false); //false is A
+                        } else if (mach_selecting.inputb_hittable) { //Connect held pipe to input B
+                            if (mach_selecting.nearby->item_B == nullptr) mach_selecting.last->connect_output(mach_selecting.nearby, true); //true is B
                         }
                         mach_selecting.last = nullptr; //clean up
-                    } else {
+                        
+                    } else {    //Safety
                         if (mach_selecting.last == nullptr) cout << "last was null\n";
                         if (mach_selecting.nearby == nullptr) cout << "nearby was null\n";
-                        
                     }    
                 } else if (mach_selecting.output_hittable) { //Check machine output flag
                     
@@ -616,16 +618,23 @@ int main() {
                 }
 
                 //Put / Take item, swap
-                if (mach_selecting.nearby != nullptr) {
+                else if (mach_selecting.nearby != nullptr && (!mach_selecting.inputa_hittable && !mach_selecting.inputb_hittable)) {
                     if (mach_selecting.item_a_hittable) {
+                        //cout << "placeitema\n";
                         if (teto.inventory && !mach_selecting.nearby->item_A) { //TETO TO MACHINE
+                            //cout << "RTSever: A\n" << (mach_selecting.nearby->input_A_machine != nullptr) << (mach_selecting.nearby->input_B_machine != nullptr) << endl;
+                            //why the fuck does this have to be flipped to get expected behavior???
+                            if (mach_selecting.nearby->input_B_machine != nullptr) /* make sure exists*/ mach_selecting.nearby->input_B_machine->sever_output(); //cut pipe before item
                             mach_selecting.nearby->item_A = teto.inventory;
                             teto.inventory = nullptr;
                             //cout << "Placed item into machine\n";
                         } else if (!teto.inventory && mach_selecting.nearby->item_A) { //MACHINE TO TETO
+                            //cout <<"MTTa\n";
                             teto.inventory = mach_selecting.nearby->item_A;
                             mach_selecting.nearby->item_A = nullptr;
                         } else if (teto.inventory && mach_selecting.nearby->item_A) { //SWAP
+                            //cout <<"SWApa\n";
+
                             Item* temp = teto.inventory;
                             teto.inventory = mach_selecting.nearby->item_A;
                             mach_selecting.nearby->item_A = temp;
@@ -633,15 +642,23 @@ int main() {
                         }
                     } else
                     if (mach_selecting.item_b_hittable) {
+                        //cout << "placeitemb\n";
+
                         if (teto.inventory && !mach_selecting.nearby->item_B) { //TETO TO MACHINE
+                            //cout << "RTSever: B\n" << (mach_selecting.nearby->input_A_machine != nullptr) << (mach_selecting.nearby->input_B_machine != nullptr) << endl;
+                            //why the fuck does this have to be flipped to get expected behavior???
+                            if (mach_selecting.nearby->input_A_machine != nullptr) /* make sure exists*/mach_selecting.nearby->input_A_machine->sever_output(); //cut pipe before item
                             mach_selecting.nearby->item_B = teto.inventory;
                             teto.inventory = nullptr;
                             //cout << "Placed item into machine\n";
                         } else if (!teto.inventory && mach_selecting.nearby->item_B) { //MACHINE TO TETO
+                            //cout <<"MTTb\n";
                             teto.inventory = mach_selecting.nearby->item_B;
                             mach_selecting.nearby->item_B = nullptr;
                             //cout << "Took item from machine\n";
                         } else if (teto.inventory && mach_selecting.nearby->item_B) { //SWAP
+                            //cout <<"SWAPb\n";
+
                             Item* temp = teto.inventory;
                             teto.inventory = mach_selecting.nearby->item_B;
                             mach_selecting.nearby->item_B = temp;
@@ -812,7 +829,21 @@ int main() {
         //BASIC PASS
         for (int i = 0; i < (int)world.machines.size(); i++) {
             Machine* thismach = &world.machines[i];
-            thismach->render(teto.x,teto.y);
+            thismach->render(teto.x,teto.y,0);
+        }
+        //PIPE PASS
+        for (int i = 0; i < (int)world.machines.size(); i++) {
+            Machine* thismach = &world.machines[i];
+            thismach->render(teto.x,teto.y,1);
+        }
+        //TEXTURE PASS (top layer)
+        for (int i = 0; i < (int)world.machines.size(); i++) {
+            Machine* thismach = &world.machines[i];
+            thismach->render(teto.x,teto.y,2);
+        }
+        //Show pipe from output to player if player is holding a pipe
+        if (mach_selecting.last) {
+            mach_selecting.last->render_pipe_to_player(teto.x,teto.y);
         }
 
         //Render player (on top)

@@ -52,12 +52,24 @@ public:
 };
 //What kind of Item
 enum ITEM_ID {
-    ID_BLUE_BARREL,
+    ID_ITEM_BLUE_BARREL,
+    ID_ITEM_WATER,
+    ID_ITEM_LAMINE,
+    ID_ITEM_RED_PHOSPHOROUS,
+    ID_ITEM_LYE,
+    ID_ITEM_PSEUDO,
+    ID_ITEM_IODINE,
+    ID_ITEM_ACID,
+    ID_ITEM_PEROXIDE,
     ID_ITEM_MAX
 };
 //What kind of machine
 enum MACHINE_ID {
-    ID_CHEST,
+    ID_MACHINE_CHEST,
+    ID_MACHINE_CENTRIFUGE,
+    ID_MACHINE_BOILER_TANK,
+    ID_MACHINE_PLC,
+    ID_MACHINE_OVEN,
     ID_MACHINE_MAX
 };
 
@@ -103,7 +115,8 @@ public:
     //Graphics
     SDL_FRect rect = {0,0,256,256}; //Size of machine TEXTURE (might will depending on machine).
     SDL_Texture* texture;
-    void render(int xoff, int yoff); //Renders this & the objects. maybe the output pipe too, down the road. Takes player pos
+    void render(int xoff, int yoff, int mode); //Renders this & the objects. maybe the output pipe too, down the road. Takes player pos
+    void render_pipe_to_player(float xoff, float yoff);
 private:
     void render_pipe(float wx1, float wy1,float dx, float dy, float length, float angle); //screen space piping
 };
